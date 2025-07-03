@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('councils', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('logo')->nullable(); // Path to logo image
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
+            $table->text('description')->nullable();
+            $table->string('term'); // Academic term (e.g., "AY 2024-2025", "1st Semester 2024")
+            $table->boolean('is_active')->default(true);
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Admin who created it
+            $table->timestamp('evaluation_deadline')->nullable(); // When evaluation should be completed
+            $table->boolean('is_evaluated')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('councils');
+    }
+};

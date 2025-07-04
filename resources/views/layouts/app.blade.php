@@ -126,6 +126,110 @@
         .stats-card-yellow {
             border-color: #FFCC00;
         }
+
+        /* Stats Card Content Utilities */
+        .stat-icon {
+            @apply w-12 h-12 rounded-lg flex items-center justify-center;
+        }
+        
+        .stat-icon-blue { @apply bg-blue-100 text-blue-600; }
+        .stat-icon-green { @apply bg-green-100 text-green-600; }
+        .stat-icon-yellow { @apply bg-yellow-100 text-yellow-600; }
+        .stat-icon-purple { @apply bg-purple-100 text-purple-600; }
+        .stat-icon-red { @apply bg-red-100 text-red-600; }
+        .stat-icon-gray { @apply bg-gray-100 text-gray-600; }
+        
+        .stat-content { @apply ml-4; }
+        .stat-label { @apply text-sm text-gray-600; }
+        .stat-value { @apply text-2xl font-bold text-gray-900; }
+
+        /* Form Design Utilities */
+        .form-card {
+            @apply bg-white rounded-lg shadow-sm border-l-4 border-green-800;
+        }
+        
+        .form-card-header {
+            @apply p-6 border-b border-gray-200;
+        }
+        
+        .form-card-title {
+            @apply text-lg font-semibold text-gray-900;
+        }
+        
+        .form-card-subtitle {
+            @apply text-sm text-gray-600 mt-1;
+        }
+        
+        .form-card-body {
+            @apply p-6;
+        }
+        
+        .form-input {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent;
+        }
+        
+        .form-label {
+            @apply block text-sm font-medium text-gray-700 mb-2;
+        }
+        
+        .form-label-required::after {
+            content: ' *';
+            @apply text-red-500;
+        }
+        
+        .form-select {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent;
+        }
+        
+        .form-textarea {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none;
+        }
+        
+        .form-file-area {
+            @apply border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-green-400 transition-colors cursor-pointer;
+        }
+        
+        .form-file-icon {
+            @apply text-3xl text-gray-400 mb-2;
+        }
+        
+        .form-file-text {
+            @apply text-sm text-gray-600 mb-2;
+        }
+        
+        .form-file-button {
+            @apply text-sm font-medium transition-colors;
+            color: #00471B;
+        }
+        
+        .form-file-button:hover {
+            color: #003d17;
+        }
+        
+        .btn {
+            @apply inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        
+        .btn-primary {
+            @apply bg-green-800 text-white hover:bg-green-900 focus:ring-green-500 px-4 py-2 text-sm;
+        }
+        
+        .btn-secondary {
+            @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 px-4 py-2 text-sm;
+        }
+        
+        .btn-warning {
+            @apply text-gray-900 hover:bg-yellow-500 focus:ring-yellow-500 px-4 py-2 text-sm;
+            background-color: #FFCC00;
+        }
+        
+        .btn-lg {
+            @apply px-6 py-3 text-base;
+        }
+        
+        .btn-sm {
+            @apply px-3 py-1.5 text-xs;
+        }
     </style>
     
     <!-- Alpine.js for interactivity -->
@@ -206,7 +310,7 @@
             <div class="flex flex-col h-full">
                 <!-- Navigation Menu -->
                 <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto sidebar-scroll">
-                    <!-- Dashboard -->
+                    <!-- Dashboard (Common to all roles) -->
                     <a href="{{ route('dashboard') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('dashboard') ? 'bg-white shadow-md' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
                         <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
                             <i class="fas fa-home text-lg"></i>
@@ -214,68 +318,140 @@
                         <span>Dashboard</span>
                     </a>
 
-                    <!-- Admin Section -->
-                    <div class="pt-6">
-                        <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Administration</h3>
-                        <div class="space-y-1">
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-building text-lg"></i>
-                                </div>
-                                <span>Departments</span>
-                            </a>
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-users text-lg"></i>
-                                </div>
-                                <span>Organizations</span>
-                            </a>
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-user-shield text-lg"></i>
-                                </div>
-                                <span>Users</span>
-                            </a>
+                    @if(auth()->check() && auth()->user()->role === 'admin')
+                        <!-- Admin Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Administration</h3>
+                            <div class="space-y-1">
+                                <a href="{{ route('admin.departments') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.departments') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-building text-lg"></i>
+                                    </div>
+                                    <span>Departments</span>
+                                </a>
+                                <a href="{{ route('admin.councils') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.councils') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-users text-lg"></i>
+                                    </div>
+                                    <span>Organizations</span>
+                                </a>
+                                <a href="{{ route('admin.users') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.users') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-user-shield text-lg"></i>
+                                    </div>
+                                    <span>Users</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Portfolio Section -->
-                    <div class="pt-6">
-                        <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Portfolio</h3>
-                        <div class="space-y-1">
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-folder-open text-lg"></i>
-                                </div>
-                                <span>My Portfolio</span>
-                            </a>
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-upload text-lg"></i>
-                                </div>
-                                <span>Upload Documents</span>
-                            </a>
+                        <!-- System Management -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">System Management</h3>
+                            <div class="space-y-1">
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-chart-bar text-lg"></i>
+                                    </div>
+                                    <span>Analytics</span>
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-cog text-lg"></i>
+                                    </div>
+                                    <span>System Settings</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    @elseif(auth()->check() && auth()->user()->role === 'adviser')
+                        <!-- Adviser Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Management</h3>
+                            <div class="space-y-1">
+                                <a href="{{ route('adviser.organizations') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('adviser.organizations') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-users text-lg"></i>
+                                    </div>
+                                    <span>My Organizations</span>
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-user-graduate text-lg"></i>
+                                    </div>
+                                    <span>My Students</span>
+                                </a>
+                            </div>
+                        </div>
 
-                    <!-- Evaluation Section -->
-                    <div class="pt-6">
-                        <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
-                        <div class="space-y-1">
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-clipboard-check text-lg"></i>
-                                </div>
-                                <span>Evaluations</span>
-                            </a>
-                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                    <i class="fas fa-chart-line text-lg"></i>
-                                </div>
-                                <span>Reports</span>
-                            </a>
+                        <!-- Evaluation Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
+                            <div class="space-y-1">
+                                <a href="{{ route('adviser.evaluations') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('adviser.evaluations') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-clipboard-check text-lg"></i>
+                                    </div>
+                                    <span>Pending Evaluations</span>
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-chart-line text-lg"></i>
+                                    </div>
+                                    <span>Evaluation Reports</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        <!-- Student Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Portfolio</h3>
+                            <div class="space-y-1">
+                                <a href="{{ route('portfolio.index') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('portfolio.*') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-folder-open text-lg"></i>
+                                    </div>
+                                    <span>My Portfolio</span>
+                                </a>
+                                <a href="{{ route('portfolio.documents') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('portfolio.documents') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-upload text-lg"></i>
+                                    </div>
+                                    <span>Upload Documents</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Organization Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Organizations</h3>
+                            <div class="space-y-1">
+                                <a href="{{ route('student.memberships') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('student.memberships') ? 'bg-white shadow-md' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-users text-lg"></i>
+                                    </div>
+                                    <span>My Memberships</span>
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-search text-lg"></i>
+                                    </div>
+                                    <span>Browse Organizations</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Evaluation Section -->
+                        <div class="pt-6">
+                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
+                            <div class="space-y-1">
+                                <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-star text-lg"></i>
+                                    </div>
+                                    <span>My Scores</span>
+                                </a>
+                            </div>
+                        </div>
+                    @endif
                 </nav>
             </div>
         </div>

@@ -11,7 +11,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
-                    Welcome back, {{ auth()->user()->first_name }}!
+                    Welcome back, {{ auth()->check() ? auth()->user()->first_name : 'Guest' }}!
                 </h1>
                 <p class="text-gray-600 mt-1">
                     Here's what's happening with your portfolio today.
@@ -27,150 +27,163 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @if(auth()->user()->role === 'admin')
+        @if(auth()->check() && isset(auth()->user()->role) && auth()->user()->role === 'admin')
             <!-- Admin Stats -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-building text-blue-600"></i>
+                    <div class="stat-icon stat-icon-blue">
+                        <i class="fas fa-building"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Total Departments</p>
-                        <p class="text-2xl font-bold text-gray-900">5</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Total Departments</p>
+                        <p class="stat-value">5</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-green-600"></i>
+                    <div class="stat-icon stat-icon-green">
+                        <i class="fas fa-users"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Active Organizations</p>
-                        <p class="text-2xl font-bold text-gray-900">12</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Active Organizations</p>
+                        <p class="stat-value">12</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-user-cog text-purple-600"></i>
+                    <div class="stat-icon stat-icon-purple">
+                        <i class="fas fa-user-cog"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Total Users</p>
-                        <p class="text-2xl font-bold text-gray-900">245</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Total Users</p>
+                        <p class="stat-value">245</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500 hover:shadow-md transition-shadow">
+            <div class="stats-card stats-card-yellow">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-clipboard-check text-yellow-600"></i>
+                    <div class="stat-icon stat-icon-yellow">
+                        <i class="fas fa-clipboard-check"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Pending Evaluations</p>
-                        <p class="text-2xl font-bold text-gray-900">8</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Pending Evaluations</p>
+                        <p class="stat-value">8</p>
                     </div>
                 </div>
             </div>
-        @elseif(auth()->user()->role === 'adviser')
+        @elseif(auth()->check() && isset(auth()->user()->role) && auth()->user()->role === 'adviser')
             <!-- Adviser Stats -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-sitemap text-blue-600"></i>
+                    <div class="stat-icon stat-icon-blue">
+                        <i class="fas fa-sitemap"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">My Organizations</p>
-                        <p class="text-2xl font-bold text-gray-900">3</p>
+                    <div class="stat-content">
+                        <p class="stat-label">My Organizations</p>
+                        <p class="stat-value">3</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-green-600"></i>
+                    <div class="stat-icon stat-icon-green">
+                        <i class="fas fa-users"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Students Under Me</p>
-                        <p class="text-2xl font-bold text-gray-900">28</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Students Under Me</p>
+                        <p class="stat-value">28</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-clipboard-check text-yellow-600"></i>
+                    <div class="stat-icon stat-icon-yellow">
+                        <i class="fas fa-clipboard-check"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Pending Evaluations</p>
-                        <p class="text-2xl font-bold text-gray-900">5</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Pending Evaluations</p>
+                        <p class="stat-value">5</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-folder-open text-purple-600"></i>
+                    <div class="stat-icon stat-icon-purple">
+                        <i class="fas fa-folder-open"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Portfolios Reviewed</p>
-                        <p class="text-2xl font-bold text-gray-900">15</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Portfolios Reviewed</p>
+                        <p class="stat-value">15</p>
                     </div>
                 </div>
             </div>
         @else
             <!-- Student Stats -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-folder-open text-blue-600"></i>
+                    <div class="stat-icon stat-icon-blue">
+                        <i class="fas fa-folder-open"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Portfolio Items</p>
-                        <p class="text-2xl font-bold text-gray-900">24</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Portfolio Items</p>
+                        <p class="stat-value">24</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-file-alt text-green-600"></i>
+                    <div class="stat-icon stat-icon-green">
+                        <i class="fas fa-file-alt"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Documents</p>
-                        <p class="text-2xl font-bold text-gray-900">12</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Documents</p>
+                        <p class="stat-value">12</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-id-badge text-purple-600"></i>
+                    <div class="stat-icon stat-icon-purple">
+                        <i class="fas fa-id-badge"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Organization Positions</p>
-                        <p class="text-2xl font-bold text-gray-900">2</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Organization Positions</p>
+                        <p class="stat-value">2</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="stats-card stats-card-green">
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-star text-yellow-600"></i>
+                    <div class="stat-icon stat-icon-yellow">
+                        <i class="fas fa-star"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-600">Portfolio Score</p>
-                        <p class="text-2xl font-bold text-gray-900">95%</p>
+                    <div class="stat-content">
+                        <p class="stat-label">Portfolio Score</p>
+                        <p class="stat-value">95%</p>
+                    </div>
+                </div>
+            </div>
+        @else
+            <!-- Default/Guest Stats -->
+            <div class="stats-card">
+                <div class="flex items-center">
+                    <div class="stat-icon stat-icon-gray">
+                        <i class="fas fa-info"></i>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Welcome</p>
+                        <p class="stat-value">Please login to view stats</p>
                     </div>
                 </div>
             </div>
@@ -224,7 +237,7 @@
             </div>
             <div class="p-6">
                 <div class="space-y-3">
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->check() && isset(auth()->user()->role) && auth()->user()->role === 'admin')
                         <a href="#" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                             <i class="fas fa-plus-circle text-blue-600 mr-3"></i>
                             <span class="text-sm font-medium text-blue-900">Create New Organization</span>
@@ -233,7 +246,7 @@
                             <i class="fas fa-building text-green-600 mr-3"></i>
                             <span class="text-sm font-medium text-green-900">Manage Departments</span>
                         </a>
-                    @elseif(auth()->user()->role === 'adviser')
+                    @elseif(auth()->check() && isset(auth()->user()->role) && auth()->user()->role === 'adviser')
                         <a href="#" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                             <i class="fas fa-clipboard-check text-blue-600 mr-3"></i>
                             <span class="text-sm font-medium text-blue-900">Review Evaluations</span>

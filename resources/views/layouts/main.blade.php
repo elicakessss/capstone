@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>E-Portfolio - Test Layout</title>
+    <title>@yield('title', 'E-Portfolio System')</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,10 +113,25 @@
                 opacity: 0;
             }
         }
+
+        /* Stats Card Pattern - Reusable Class */
+        .stats-card {
+            @apply bg-white rounded-lg shadow-sm p-6 border-l-4 hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer;
+        }
+        
+        .stats-card-green {
+            border-color: #00471B;
+        }
+        
+        .stats-card-yellow {
+            border-color: #FFCC00;
+        }
     </style>
     
     <!-- Alpine.js for interactivity -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    @stack('styles')
 </head>
 <body class="font-sans antialiased bg-gray-50" style="font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <div class="flex h-screen overflow-hidden bg-white">
@@ -156,10 +171,31 @@
                                 <i class="fas fa-user text-gray-600"></i>
                             </div>
                             <div class="hidden md:block text-left">
-                                <p class="font-medium text-gray-800">John Doe</p>
+                                <p class="font-medium text-gray-800">{{ Auth::user()->name ?? 'John Doe' }}</p>
                             </div>
                             <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                         </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div x-show="open" @click.away="open = false" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-user mr-2"></i>Profile
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-cog mr-2"></i>Settings
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,11 +204,10 @@
         <!-- Sidebar -->
         <div class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform translate-x-0 transition-transform duration-300 ease-in-out border-r border-gray-100" style="top: 80px;">
             <div class="flex flex-col h-full">
-
                 <!-- Navigation Menu -->
                 <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto sidebar-scroll">
                     <!-- Dashboard -->
-                    <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 bg-white shadow-md" style="color: #00471B;">
+                    <a href="{{ route('dashboard') ?? '#' }}" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('dashboard') ? 'bg-white shadow-md' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
                         <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
                             <i class="fas fa-home text-lg"></i>
                         </div>
@@ -195,6 +230,12 @@
                                 </div>
                                 <span>Organizations</span>
                             </a>
+                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                    <i class="fas fa-user-shield text-lg"></i>
+                                </div>
+                                <span>Users</span>
+                            </a>
                         </div>
                     </div>
 
@@ -208,6 +249,31 @@
                                 </div>
                                 <span>My Portfolio</span>
                             </a>
+                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                    <i class="fas fa-upload text-lg"></i>
+                                </div>
+                                <span>Upload Documents</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Section -->
+                    <div class="pt-6">
+                        <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
+                        <div class="space-y-1">
+                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                    <i class="fas fa-clipboard-check text-lg"></i>
+                                </div>
+                                <span>Evaluations</span>
+                            </a>
+                            <a href="#" class="group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
+                                <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                    <i class="fas fa-chart-line text-lg"></i>
+                                </div>
+                                <span>Reports</span>
+                            </a>
                         </div>
                     </div>
                 </nav>
@@ -218,94 +284,11 @@
         <div class="flex-1 flex flex-col overflow-hidden ml-64" style="margin-top: 80px;">
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
-                <div class="space-y-6">
-                    <!-- Welcome Section -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900">Welcome to E-Portfolio System!</h1>
-                                <p class="text-gray-600 mt-1">This is a test layout showcasing the modern, professional design.</p>
-                            </div>
-                            <div class="hidden md:block">
-                                <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-yellow-100 rounded-full flex items-center justify-center border-2" style="border-color: #FFCC00;">
-                                    <i class="fas fa-graduation-cap text-2xl" style="color: #00471B;"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer" style="border-color: #00471B;">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-building" style="color: #00471B;"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600">Total Departments</p>
-                                    <p class="text-2xl font-bold text-gray-900">5</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer" style="border-color: #FFCC00;">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-users" style="color: #FFCC00;"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600">Active Organizations</p>
-                                    <p class="text-2xl font-bold text-gray-900">12</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer" style="border-color: #00471B;">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-user-cog" style="color: #00471B;"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600">Total Users</p>
-                                    <p class="text-2xl font-bold text-gray-900">245</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer" style="border-color: #FFCC00;">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-clipboard-check" style="color: #FFCC00;"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600">Pending Evaluations</p>
-                                    <p class="text-2xl font-bold text-gray-900">8</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Feature Showcase -->
-                    <div class="bg-white rounded-lg shadow-sm p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Design Features</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="p-4 bg-green-50 rounded-lg border-l-4" style="border-color: #00471B;">
-                                <h3 class="font-medium" style="color: #00471B;">Professional Green Theme</h3>
-                                <p class="text-sm mt-1" style="color: #00471B;">Inspired by St. Paul University Philippines</p>
-                            </div>
-                            <div class="p-4 bg-yellow-50 rounded-lg border-l-4" style="border-color: #FFCC00;">
-                                <h3 class="font-medium" style="color: #FFCC00;">Strategic Yellow Accents</h3>
-                                <p class="text-sm mt-1" style="color: #FFCC00;">Adds vibrancy and draws attention to key elements</p>
-                            </div>
-                            <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-gray-400">
-                                <h3 class="font-medium text-gray-800">Clean White Foundation</h3>
-                                <p class="text-sm text-gray-600 mt-1">Professional, readable design with Product Sans</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @yield('content')
             </main>
         </div>
     </div>
+
+    @stack('scripts')
 </body>
 </html>

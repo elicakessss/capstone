@@ -7,11 +7,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Temporary route to test the layout without authentication
-Route::get('/test-layout', function () {
-    return view('test-layout');
-});
-
 // Dashboard route (requires authentication)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {

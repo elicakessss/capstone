@@ -7,7 +7,7 @@
             <button id="sidebar-toggle" onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg text-gray-600 hover:text-green-800 hover:bg-green-50 transition-colors">
                 <i class="fas fa-bars text-lg"></i>
             </button>
-            
+
             <!-- Breadcrumbs -->
             <nav class="hidden md:flex" aria-label="Breadcrumb">
                 <ol class="flex items-center space-x-2">
@@ -41,8 +41,8 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <input type="text" 
-                       class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors" 
+                <input type="text"
+                       class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
                        placeholder="Search portfolios, documents, users...">
             </div>
         </div>
@@ -60,7 +60,7 @@
 
             <!-- User Menu Dropdown -->
             <div class="relative" x-data="{ open: false }">
-                <button @click="open = !open" 
+                <button @click="open = !open"
                         class="flex items-center space-x-3 p-2 text-sm rounded-lg hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors">
                     <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         @if(auth()->user()->profile_picture)
@@ -77,7 +77,7 @@
                 </button>
 
                 <!-- Dropdown Menu -->
-                <div x-show="open" 
+                <div x-show="open"
                      @click.away="open = false"
                      x-transition:enter="transition ease-out duration-100"
                      x-transition:enter-start="transform opacity-0 scale-95"

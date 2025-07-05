@@ -21,6 +21,7 @@ class User extends Authenticatable
         'id_number',
         'first_name',
         'last_name',
+        'name',
         'email',
         'password',
         'role',
@@ -51,5 +52,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the user's full name.
+     */
+    public function getNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Get the department that the user belongs to.
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 }

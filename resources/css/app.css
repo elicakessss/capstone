@@ -84,7 +84,7 @@
     .sidebar-mobile {
         transform: translateX(-100%);
     }
-    
+
     .sidebar-mobile.open {
         transform: translateX(0);
     }

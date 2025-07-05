@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('id_number', 50)->unique(); // Student ID, Employee ID, etc. - Limited to 50 chars
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('name')->nullable(); // Full name (combination of first_name and last_name)
             $table->string('email', 191)->unique(); // Limited to 191 chars for MySQL compatibility
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPUP Form Components Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --spup-green: #00471B;
+            --spup-yellow: #FFCC00;
+        }
+        .spup-green { color: var(--spup-green); }
+        .bg-spup-green { background-color: var(--spup-green); }
+        .border-spup-green { border-color: var(--spup-green); }
+        .spup-yellow { color: var(--spup-yellow); }
+        .bg-spup-yellow { background-color: var(--spup-yellow); }
+        .border-spup-yellow { border-color: var(--spup-yellow); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-spup-green shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="images/spup.png" alt="SPUP Logo" class="h-10 w-10 mr-3">
+                    <h1 class="text-white text-xl font-bold">E-Portfolio System</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto py-8 px-4">
+        <!-- Page Title -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">SPUP Form Components</h1>
+                    <p class="text-gray-600 mt-1">Clean, professional form design with SPUP branding</p>
+                </div>
+                <div class="hidden md:block">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-yellow-100 rounded-full flex items-center justify-center border-2 border-spup-yellow">
+                        <i class="fas fa-clipboard-list text-2xl spup-green"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information Form -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-spup-green mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold spup-green">Student Information</h2>
+                <p class="text-sm text-gray-600 mt-1">Personal details and contact information</p>
+            </div>
+            <div class="p-6">
+                <form class="space-y-6">
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                First Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="first_name" name="first_name"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="Enter your first name" required>
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                Last Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="last_name" name="last_name"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="Enter your last name" required>
+                        </div>
+                    </div>
+
+                    <!-- Contact Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" id="email" name="email"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="your.email@spup.edu.ph" required>
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                Phone Number
+                            </label>
+                            <input type="tel" id="phone" name="phone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="09XX XXX XXXX">
+                        </div>
+                    </div>
+
+                    <!-- Student ID and Department -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="student_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Student ID <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="student_id" name="student_id"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="2024-XXXXX" required>
+                        </div>
+                        <div>
+                            <label for="department" class="block text-sm font-medium text-gray-700 mb-2">
+                                Department <span class="text-red-500">*</span>
+                            </label>
+                            <select id="department" name="department"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                                <option value="">Select Department</option>
+                                <option value="engineering">College of Engineering</option>
+                                <option value="business">College of Business</option>
+                                <option value="education">College of Education</option>
+                                <option value="arts_sciences">College of Arts and Sciences</option>
+                                <option value="nursing">College of Nursing</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bio/Description -->
+                    <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
+                            Personal Bio
+                        </label>
+                        <textarea id="bio" name="bio" rows="4"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                  placeholder="Tell us about yourself, your goals, and achievements..."></textarea>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div>
+                        <label for="profile_picture" class="block text-sm font-medium text-gray-700 mb-2">
+                            Profile Picture
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-green-400 transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm text-gray-600 mb-2">Click to upload or drag and drop</p>
+                            <input type="file" id="profile_picture" name="profile_picture"
+                                   accept="image/*" class="hidden">
+                            <button type="button" onclick="document.getElementById('profile_picture').click()"
+                                    class="text-sm text-green-600 hover:text-green-700 font-medium">
+                                Choose File
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Portfolio Entry Form -->
+        <div class="bg-white rounded-lg shadow-sm border-l-4 border-spup-yellow mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold spup-green">Portfolio Entry</h2>
+                <p class="text-sm text-gray-600 mt-1">Add a new achievement or document to your portfolio</p>
+            </div>
+            <div class="p-6">
+                <form class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="entry_title" class="block text-sm font-medium text-gray-700 mb-2">
+                                Title <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="entry_title" name="entry_title"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                   placeholder="Achievement or document title" required>
+                        </div>
+                        <div>
+                            <label for="entry_category" class="block text-sm font-medium text-gray-700 mb-2">
+                                Category <span class="text-red-500">*</span>
+                            </label>
+                            <select id="entry_category" name="entry_category"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" required>
+                                <option value="">Select Category</option>
+                                <option value="academic">Academic Achievement</option>
+                                <option value="organization">Organization Activity</option>
+                                <option value="community">Community Service</option>
+                                <option value="leadership">Leadership Role</option>
+                                <option value="skills">Skills & Certifications</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="entry_description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Description <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="entry_description" name="entry_description" rows="4"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                  placeholder="Describe your achievement, what you learned, and its impact..." required></textarea>
+                    </div>
+
+                    <div>
+                        <label for="supporting_document" class="block text-sm font-medium text-gray-700 mb-2">
+                            Supporting Document
+                        </label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-yellow-400 transition-colors">
+                            <i class="fas fa-file-upload text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm text-gray-600 mb-2">Upload certificate, photo, or document</p>
+                            <input type="file" id="supporting_document" name="supporting_document"
+                                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden">
+                            <button type="button" onclick="document.getElementById('supporting_document').click()"
+                                    class="text-sm text-yellow-600 hover:text-yellow-700 font-medium">
+                                Choose File
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                <button type="button"
+                        class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button type="button"
+                        class="px-6 py-2 border border-spup-yellow bg-spup-yellow text-gray-900 rounded-md hover:bg-yellow-500 font-medium transition-colors">
+                    <i class="fas fa-save mr-2"></i>Save Draft
+                </button>
+                <button type="submit"
+                        class="px-6 py-2 bg-spup-green text-white rounded-md hover:bg-green-800 font-medium transition-colors">
+                    <i class="fas fa-check mr-2"></i>Submit
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-spup-green text-white mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2025 St. Paul University Philippines - E-Portfolio System</p>
+        </div>
+    </footer>
+</body>
+</html>

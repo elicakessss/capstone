@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('slots')->default(1); // Number of available slots for this position
             $table->integer('order')->default(0); // For ordering positions in the organization
             $table->timestamps();
-            
+
             // Ensure unique combination of council and position name
             $table->unique(['council_id', 'position_name']);
         });

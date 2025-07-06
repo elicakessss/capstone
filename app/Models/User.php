@@ -69,4 +69,20 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Department::class);
     }
+
+    /**
+     * Orgs created by this user (as admin)
+     */
+    public function createdOrgs()
+    {
+        return $this->hasMany(Org::class, 'created_by');
+    }
+
+    /**
+     * Orgs assigned to this user (as adviser)
+     */
+    public function advisedOrgs()
+    {
+        return $this->hasMany(Org::class, 'adviser_id');
+    }
 }

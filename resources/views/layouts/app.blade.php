@@ -67,13 +67,13 @@
             border-radius: 0 2px 2px 0;
         }
 
+        /* Department Card Hover - match button scale */
         .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.15s cubic-bezier(0.4,0,0.2,1), box-shadow 0.15s;
         }
-
-        .card-hover:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 10px 25px -5px rgba(0, 71, 27, 0.1), 0 10px 10px -5px rgba(0, 71, 27, 0.04);
+        .card-hover:hover, .card-hover:focus {
+            transform: scale(1.06);
+            box-shadow: 0 6px 16px -4px rgba(0, 71, 27, 0.08), 0 6px 6px -4px rgba(0, 71, 27, 0.03);
         }
 
         /* Pulse animation for notifications */
@@ -545,6 +545,27 @@
         .sidebar-section .space-y-1 > :not([hidden]) ~ :not([hidden]) {
             margin-top: 0 !important;
         }
+
+        /* Reusable Org Card */
+        .org-card {
+            @apply bg-white rounded-lg shadow p-6 flex flex-col gap-2 transition cursor-pointer;
+        }
+        .org-card:focus, .org-card:hover {
+            transform: scale(1.025);
+            box-shadow: 0 10px 25px -5px rgba(0, 71, 27, 0.10), 0 10px 10px -5px rgba(0, 71, 27, 0.04);
+        }
+        .org-card .org-title {
+            @apply text-lg font-semibold text-gray-800 mb-1;
+        }
+        .org-card .org-type {
+            @apply text-sm text-gray-500 mb-1;
+        }
+        .org-card .org-description {
+            @apply text-gray-600 mb-2 line-clamp-2;
+        }
+        .org-card .org-term {
+            @apply inline-block px-2 py-1 text-xs rounded bg-green-100 text-green-800;
+        }
     </style>
 
     <!-- Alpine.js for interactivity -->
@@ -811,18 +832,40 @@
                         <span>Dashboard</span>
                     </a>
 
+                    <!-- User Tabs: Portfolio, Organization, Profile (All users) -->
+                    <div class="sidebar-section">
+                        <a href="{{ route('portfolio.index') }}" class="sidebar-item group flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('portfolio.*') ? 'bg-white shadow-md active' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
+                            <div class="w-8 h-8 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                <i class="fas fa-folder-open text-lg"></i>
+                            </div>
+                            <span>Portfolio</span>
+                        </a>
+                        <a href="{{ route('councils.index') }}" class="sidebar-item group flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('councils.*') ? 'bg-white shadow-md active' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
+                            <div class="w-8 h-8 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                <i class="fas fa-users text-lg"></i>
+                            </div>
+                            <span>Organization</span>
+                        </a>
+                        <a href="{{ route('profile.edit') }}" class="sidebar-item group flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('profile.edit') ? 'bg-white shadow-md active' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
+                            <div class="w-8 h-8 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                <i class="fas fa-user text-lg"></i>
+                            </div>
+                            <span>Profile</span>
+                        </a>
+                    </div>
+
                     @if(auth()->check() && auth()->user()->role === 'admin')
                         <!-- Admin Section -->
                         <div class="pt-6">
                             <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Admin Settings</h3>
                             <div class="space-y-1">
-                                <a href="{{ route('admin.departments') ?? '#' }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.departments') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
+                                <!-- <a href="{{ route('admin.departments') ?? '#' }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.departments') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
                                     <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
                                         <i class="fas fa-building text-lg"></i>
                                     </div>
                                     <span>Departments</span>
-                                </a>
-                                <a href="{{ route('admin.councils') ?? '#' }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.councils') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
+                                </a> -->
+                                <a href="{{ route('admin.orgs.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.orgs.index') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
                                     <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
                                         <i class="fas fa-users text-lg"></i>
                                     </div>
@@ -956,7 +999,7 @@
                     <a href="{{ route('admin.departments') ?? '#' }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('admin.departments') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-building text-xl mb-1"></i>
                     </a>
-                    <a href="{{ route('admin.councils') ?? '#' }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('admin.councils') ? 'active' : '' }}" style="color: #00471B;">
+                    <a href="{{ route('admin.orgs.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('admin.orgs.index') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-users text-xl mb-1"></i>
                     </a>
                     <a href="{{ route('admin.users.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" style="color: #00471B;">

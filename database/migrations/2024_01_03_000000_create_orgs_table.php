@@ -16,11 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('type', 64); // Added type field
             $table->string('logo')->nullable(); // Path to logo image
-            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->text('description')->nullable();
-            $table->string('term'); // Academic term (e.g., "AY 2024-2025", "1st Semester 2024")
+            $table->string('term')->nullable(); // Academic term (e.g., "AY 2024-2025", "1st Semester 2024") now nullable
             $table->boolean('is_active')->default(true);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade'); // Admin who created it
+            $table->foreignId('template_id')->nullable()->constrained('orgs')->onDelete('cascade'); // Link to org template
+            $table->foreignId('adviser_id')->nullable()->constrained('users')->onDelete('set null'); // Adviser who owns the org instance
+            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null'); // Department for the org
             $table->timestamp('evaluation_deadline')->nullable(); // When evaluation should be completed
             $table->boolean('is_evaluated')->default(false);
             $table->timestamps();

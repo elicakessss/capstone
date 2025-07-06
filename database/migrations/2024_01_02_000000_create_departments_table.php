@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('code', 50)->unique(); // Department code (e.g., CCS, COE, etc.) - Limited to 50 chars
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->string('color', 10)->nullable(); // Hex color code for department
             $table->timestamps();
         });
     }

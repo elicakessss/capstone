@@ -49,11 +49,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/departments', fn() => view('admin.departments'))->name('departments');
         Route::get('/councils', fn() => view('admin.councils'))->name('councils');
 
-        // User request management (API endpoints only)
-        Route::prefix('user-requests')->name('user-requests.')->group(function () {
-            Route::post('/{userRequest}/approve', [App\Http\Controllers\UserRequestController::class, 'approve'])->name('approve');
-            Route::post('/{userRequest}/reject', [App\Http\Controllers\UserRequestController::class, 'reject'])->name('reject');
-        });
 
         // User management
         Route::prefix('users')->name('users.')->group(function () {
@@ -65,6 +60,34 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{user}', [App\Http\Controllers\Admin\UsersController::class, 'update'])->name('update');
             Route::delete('/{user}', [App\Http\Controllers\Admin\UsersController::class, 'destroy'])->name('destroy');
         });
+        Route::prefix('user-requests')->name('user-requests.')->group(function () {
+            Route::post('/{userRequest}/approve', [App\Http\Controllers\UserRequestController::class, 'approve'])->name('approve');
+            Route::post('/{userRequest}/reject', [App\Http\Controllers\UserRequestController::class, 'reject'])->name('reject');
+        });
+
+        // Organization management
+        Route::prefix('orgs')->name('orgs.')->group(function () {
+            Route::get('/', [App\Http\Controllers\OrgController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\OrgController::class, 'store'])->name('store');
+            Route::get('/{org}', [App\Http\Controllers\OrgController::class, 'show'])->name('show');
+            Route::get('/{org}/edit', [App\Http\Controllers\OrgController::class, 'edit'])->name('edit');
+            Route::put('/{org}', [App\Http\Controllers\OrgController::class, 'update'])->name('update');
+            Route::delete('/{org}', [App\Http\Controllers\OrgController::class, 'destroy'])->name('destroy');
+
+            // Position management for org
+            Route::post('/{org}/positions', [App\Http\Controllers\Admin\OrgPositionController::class, 'store'])->name('positions.store');
+
+            // Adviser assignment and search
+            Route::post('/{org}/assign-adviser', [App\Http\Controllers\Admin\OrgAdviserController::class, 'assign'])->name('assignAdviser');
+            Route::get('/{org}/search-advisers', [App\Http\Controllers\Admin\OrgAdviserController::class, 'search'])->name('searchAdvisers');
+        });
+
+        // Department management
+        Route::post('/departments', [App\Http\Controllers\Admin\DepartmentsController::class, 'store'])->name('departments.store');
+        Route::get('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'show'])->name('departments.show');
+        Route::get('/departments/{department}/edit', [App\Http\Controllers\Admin\DepartmentsController::class, 'edit'])->name('departments.edit');
+        Route::put('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'update'])->name('departments.update');
+        Route::delete('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'destroy'])->name('departments.destroy');
 
         // Form management
         Route::prefix('forms')->name('forms.')->group(function () {
@@ -75,6 +98,7 @@ Route::middleware(['auth'])->group(function () {
 
         // System logs
         Route::get('/logs', fn() => view('admin.logs.index'))->name('logs');
+
     });
 });
 

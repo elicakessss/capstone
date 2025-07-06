@@ -20,10 +20,10 @@ class AdminUserSeeder extends Seeder
                 'first_name' => 'System',
                 'last_name' => 'Administrator',
                 'name' => 'System Administrator',
-                'id_number' => 'ADMIN001',
+                'id_number' => 'admin123',
                 'email' => 'admin@spup.edu.ph',
                 'email_verified_at' => now(),
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make('password'),
                 'role' => 'admin',
                 'department_id' => 1, // CCS
                 'is_active' => true,

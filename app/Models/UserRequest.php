@@ -13,6 +13,7 @@ class UserRequest extends Model
         'email',
         'id_number',
         'department_id',
+        'role',
         'password',
         'status',
         'admin_notes',

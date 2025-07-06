@@ -31,6 +31,7 @@ class UserRequestController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:user_requests', 'unique:users'],
             'id_number' => ['required', 'string', 'max:255', 'unique:user_requests', 'unique:users'],
             'department_id' => ['required', 'exists:departments,id'],
+            'role' => ['required', 'in:student,adviser,admin'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms' => ['required', 'accepted'],
         ]);
@@ -41,6 +42,7 @@ class UserRequestController extends Controller
             'email' => $request->email,
             'id_number' => $request->id_number,
             'department_id' => $request->department_id,
+            'role' => $request->role,
             'password' => Hash::make($request->password),
             'status' => 'pending',
         ]);
@@ -102,6 +104,7 @@ class UserRequestController extends Controller
             'email' => $userRequest->email,
             'id_number' => $userRequest->id_number,
             'department_id' => $userRequest->department_id,
+            'role' => $userRequest->role, // Ensure role is copied
             'password' => $userRequest->password, // Already hashed
         ]);
 

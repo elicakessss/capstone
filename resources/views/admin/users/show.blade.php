@@ -178,7 +178,6 @@ function closeModal(id) {
 }
 function submitEditUserForm(event) {
     event.preventDefault();
-    console.log('Before fetch');
     const form = document.getElementById('editUserForm');
     clearEditFormErrors();
     if (!validateEditForm(form)) {
@@ -186,7 +185,6 @@ function submitEditUserForm(event) {
         return;
     }
     const formData = new FormData(form);
-    // Ensure _method=PUT is present for Laravel
     if (!formData.has('_method')) {
         formData.append('_method', 'PUT');
     }
@@ -204,12 +202,10 @@ function submitEditUserForm(event) {
         }
     })
     .then(response => {
-        console.log('Fetch response:', response);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return response.json();
     })
     .then(data => {
-        console.log('AJAX response:', data);
         if (data.success === true) {
             closeModal('editUserModal');
             showToast('User updated successfully!', 'success');
@@ -238,8 +234,6 @@ function submitEditUserForm(event) {
         }
     })
     .catch(error => {
-        console.log('In .catch', error);
-        console.error('Error:', error);
         closeModal('editUserModal');
         showToast('An error occurred while updating the user.', 'error');
         setTimeout(() => { window.location.reload(); }, 1500);
@@ -247,7 +241,6 @@ function submitEditUserForm(event) {
     .finally(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        console.log('After fetch');
     });
 }
 function clearEditFormErrors() {

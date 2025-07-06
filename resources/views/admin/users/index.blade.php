@@ -195,29 +195,22 @@
                                         @php
                                             $actions = [
                                                 [
-                                                    'type' => 'link',
-                                                    'url' => route('admin.user-requests.show', $request),
-                                                    'variant' => 'view',
-                                                    'icon' => 'fas fa-eye',
-                                                    'tooltip' => 'View Request Details'
-                                                ]
-                                            ];
-                                            if($request->isPending()) {
-                                                $actions[] = [
-                                                    'type' => 'button',
-                                                    'onclick' => 'openApproveModal(' . $request->id . ', \' ' . addslashes($request->full_name) . '\')',
-                                                    'variant' => 'approve',
+                                                    'type' => 'form',
+                                                    'form_url' => route('admin.user-requests.approve', $request),
+                                                    'method' => 'POST',
                                                     'icon' => 'fas fa-check',
-                                                    'tooltip' => 'Approve Request'
-                                                ];
-                                                $actions[] = [
-                                                    'type' => 'button',
-                                                    'onclick' => 'openRejectModal(' . $request->id . ', \' ' . addslashes($request->full_name) . '\')',
-                                                    'variant' => 'reject',
+                                                    'variant' => 'approve',
+                                                    'tooltip' => 'Approve Request',
+                                                ],
+                                                [
+                                                    'type' => 'form',
+                                                    'form_url' => route('admin.user-requests.reject', $request),
+                                                    'method' => 'POST',
                                                     'icon' => 'fas fa-times',
-                                                    'tooltip' => 'Reject Request'
-                                                ];
-                                            }
+                                                    'variant' => 'reject',
+                                                    'tooltip' => 'Reject Request',
+                                                ],
+                                            ];
                                         @endphp
                                         <x-table-actions :actions="$actions" />
                                     </td>
@@ -481,6 +474,11 @@
     }
     [x-show="tab === 'accounts'"] .data-table thead tr th {
         border-radius: 0 !important;
+    }
+
+    .search-input,
+    .filter-select {
+        font-size: 14px !important;
     }
 </style>
 

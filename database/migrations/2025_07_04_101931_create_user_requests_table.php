@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email', 191)->unique();
             $table->string('id_number', 50)->unique();
             $table->unsignedBigInteger('department_id');
+            $table->string('role', 32); // Added role field
             $table->string('password');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('admin_notes')->nullable();

@@ -83,7 +83,7 @@
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="{{ route('admin.user-requests.index') }}" class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200">
+                    <a href="{{ route('admin.users.index', ['tab' => 'requests']) }}" class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200">
                         <i class="fas fa-user-plus text-blue-600 mr-2"></i>
                         <span class="font-medium text-blue-900">Review User Requests</span>
                     </a>

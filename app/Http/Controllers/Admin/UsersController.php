@@ -38,8 +38,9 @@ class UsersController extends Controller
         $users = $query->paginate(15);
         $departments = Department::all();
 
-        // Fetch registration requests for the Requests tab
+        // Fetch registration requests for the Requests tab (only pending)
         $requests = UserRequest::with('department')
+            ->where('status', 'pending')
             ->orderByDesc('created_at')
             ->paginate(15);
 

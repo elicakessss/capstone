@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'roles', // Add roles to fillable
         'department_id',
         'profile_picture',
         'bio',
@@ -51,6 +52,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'roles' => 'array', // Cast roles as array
         ];
     }
 
@@ -83,6 +85,6 @@ class User extends Authenticatable
      */
     public function advisedOrgs()
     {
-        return $this->hasMany(Org::class, 'adviser_id');
+        return $this->belongsToMany(Org::class, 'org_adviser', 'adviser_id', 'org_id');
     }
 }

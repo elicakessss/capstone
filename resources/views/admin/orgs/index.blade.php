@@ -8,43 +8,88 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Organization Management</h1>
-            <p class="text-gray-600 mt-1">Manage councils and organizations</p>
+            <p class="text-gray-600 mt-1">Manage organization terms and organizations</p>
         </div>
-        <button onclick="showAddOrgModal()" class="btn btn-green" type="button">
-            <i class="fas fa-plus"></i> Add Org
-        </button>
     </div>
 
-    <!-- Department List Section Header -->
-    @if(isset($departments) && count($departments))
-    <div class="px-6 flex items-center justify-between border-b border-gray-200 mb-2 pb-2 mt-8">
-        <h3 class="text-sm font-medium text-gray-500">Departments</h3>
-    </div>
-    <div class="px-6 flex flex-wrap gap-3 mb-8">
-        @foreach($departments as $department)
-            <a href="{{ route('admin.departments.show', $department) }}"
-               class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border border-gray-200 bg-white shadow-sm text-sm card-hover min-h-[42px]"
-               style="border-radius: 6px; min-height: 42px; border: 1.5px solid #e5e7eb; background: #fff; box-shadow: 0 1px 2px 0 rgba(16,24,40,0.05); padding: 0 1.5rem; height: 42px;">
-                <span class="inline-block w-4 h-4 rounded-full" style="background: {{ $department->color ?? '#e5e7eb' }};"></span>
-                <span class="font-medium">{{ $department->name }}</span>
-                <span class="text-xs text-gray-500">({{ $department->code }})</span>
-            </a>
-        @endforeach
-    </div>
-    @endif
-
-    <!-- Tabbed Interface -->
-    <div x-data="{ tab: 'templates' }" class="mt-6">
-        <div class="flex border-b border-gray-200 mb-6">
-            <button @click="tab = 'orgs'"
-                :class="tab === 'orgs' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-green-600 hover:border-green-600'"
-                class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors">
-                Available Organizations
+    <!-- Departments and Org Types Section as Toggleable Tabs -->
+    <div x-data="{ sectionTab: 'departments' }" class="flex flex-col gap-6 mb-8">
+        <div class="flex items-center border-b border-gray-200 mb-2">
+            <button @click="sectionTab = 'departments'"
+                :class="sectionTab === 'departments' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
+                class="whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors">
+                Departments
             </button>
-            <button @click="tab = 'templates'"
-                :class="tab === 'templates' ? 'border-green-600 text-green-600' : 'border-transparent text-gray-500 hover:text-green-600 hover:border-green-600'"
-                class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors">
-                Org Templates
+            <button @click="sectionTab = 'orgTypes'"
+                :class="sectionTab === 'orgTypes' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
+                class="whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors">
+                Org Types
+            </button>
+            <div class="flex-1"></div>
+            <template x-if="sectionTab === 'departments'">
+                <button onclick="showAddDepartmentModal()" class="btn btn-green ml-4" type="button">
+                    <i class="fas fa-plus"></i> Add Department
+                </button>
+            </template>
+            <template x-if="sectionTab === 'orgTypes'">
+                <button onclick="showAddTypeModal()" class="btn btn-green ml-4" type="button">
+                    <i class="fas fa-plus"></i> Add Type
+                </button>
+            </template>
+        </div>
+        <!-- Departments Pills -->
+        <div x-show="sectionTab === 'departments'" class="flex flex-wrap gap-3 min-h-[42px]">
+            @forelse($departments ?? [] as $department)
+                <a href="{{ route('admin.departments.show', $department) }}" class="focus:outline-none">
+                    <span class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border bg-white shadow-sm text-sm card-hover min-h-[42px] transition-transform duration-200 cursor-pointer"
+                        style="border-color: {{ $department->color ?? '#e5e7eb' }}; background: {{ $department->color ? $department->color.'20' : '#fff' }}; color: {{ $department->color ?? '#111827' }};"
+                        onmouseover="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
+                        onmouseout="this.style.background='{{ $department->color ? $department->color.'20' : '#fff' }}';this.style.borderColor='{{ $department->color ?? '#e5e7eb' }}';this.style.color='{{ $department->color ?? '#111827' }}'"
+                        onfocus="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
+                        onblur="this.style.background='{{ $department->color ? $department->color.'20' : '#fff' }}';this.style.borderColor='{{ $department->color ?? '#e5e7eb' }}';this.style.color='{{ $department->color ?? '#111827' }}'">
+                        <span class="font-medium">{{ $department->name }}</span>
+                    </span>
+                </a>
+            @empty
+                <span class="text-gray-400 italic">No Departments found.</span>
+            @endforelse
+        </div>
+        <!-- Org Types Pills -->
+        <div x-show="sectionTab === 'orgTypes'" class="flex flex-wrap gap-3 min-h-[42px]">
+            @forelse($orgTypes ?? [] as $type)
+                <a href="{{ route('admin.org_types.show', $type) }}" class="focus:outline-none">
+                    <span class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border border-gray-200 bg-white shadow-sm text-sm card-hover min-h-[42px] transition-transform duration-200 cursor-pointer"
+                        style="border-color: #e5e7eb;"
+                        onmouseover="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
+                        onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#111827'"
+                        onfocus="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
+                        onblur="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#111827'">
+                        <span class="font-medium">{{ $type->name }}</span>
+                    </span>
+                </a>
+            @empty
+                <span class="text-gray-400 italic">No Org Types found.</span>
+            @endforelse
+        </div>
+    </div>
+
+    <!-- Tabbed Interface with Add Organization button beside tabs -->
+    <div x-data="{ tab: 'orgs' }" class="mt-6">
+        <div class="flex border-b border-gray-200 mb-6 items-center justify-between">
+            <div class="flex">
+                <button @click="tab = 'orgs'"
+                    :class="tab === 'orgs' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
+                    class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors">
+                    Available Organizations
+                </button>
+                <button @click="tab = 'templates'"
+                    :class="tab === 'templates' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
+                    class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors">
+                    Org Templates
+                </button>
+            </div>
+            <button onclick="showAddOrgModal()" class="btn btn-green ml-4" type="button">
+                <i class="fas fa-plus"></i> Add Organization
             </button>
         </div>
         <!-- Available Organizations Tab -->
@@ -70,7 +115,6 @@
                                     <span class="inline-block w-3 h-3 rounded-full" style="background: {{ $org->department->color }};"></span>
                                 @endif
                             </div>
-                            <div class="org-description text-sm text-gray-600 mb-1 line-clamp-2">{{ $org->description }}</div>
                             @if($org->term)
                                 <span class="org-term text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ $org->term }}</span>
                             @endif
@@ -90,48 +134,40 @@
 
 <!-- Add Org Modal -->
 <div id="addOrgModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-    <div class="modal-content p-0" style="border-radius:18px;">
-        <!-- Modal Header -->
-        <div class="modal-header" style="border-radius:18px 18px 0 0; padding:1.5rem; background:#00471B; color:white;">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Add Organization</h3>
-                <button onclick="hideAddOrgModal()" class="text-white hover:text-gray-200"><i class="fas fa-times"></i></button>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Add Organization</h3>
+            <button onclick="hideAddOrgModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="POST" action="{{ route('admin.orgs.store') }}" class="px-6 pt-6 pb-2">
+            @csrf
+            <div class="mb-4">
+                <label class="form-label text-base">Organization Name</label>
+                <input type="text" name="name" class="form-input w-full text-base" required>
             </div>
-        </div>
-        <!-- Modal Body -->
-        <div class="modal-body p-0">
-            <form method="POST" action="{{ route('admin.orgs.store') }}" style="padding:1.5rem;">
-                @csrf
-                <div class="mb-4">
-                    <label class="form-label">Organization Name</label>
-                    <input type="text" name="name" class="form-input w-full" required>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Type</label>
-                    <input type="text" name="type" class="form-input w-full" required>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Department</label>
-                    <select id="orgDepartmentSelect" name="department_id" class="form-select w-full" required>
-                        <option value="">Select Department</option>
-                        @foreach($departments ?? [] as $department)
-                            <option value="{{ $department->id }}">{{ $department->name }}</option>
-                        @endforeach
-                        <option value="add_new">+ Add new department…</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-input w-full" rows="3"></textarea>
-                </div>
-                <div class="modal-footer" style="border-radius:0 0 18px 18px; background:#f9fafb; padding:1rem 1.5rem; border-top:1px solid #e5e7eb;">
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideAddOrgModal()" class="btn btn-gray">Cancel</button>
-                        <button type="submit" class="btn btn-green"><i class="fas fa-plus"></i> Add Organization</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+            <div class="mb-4">
+                <label class="form-label text-base">Type</label>
+                <select name="type" class="form-select w-full text-base" required>
+                    <option value="">Select Type</option>
+                    @foreach($orgTypes ?? [] as $orgType)
+                        <option value="{{ $orgType->name }}">{{ $orgType->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-base">Department</label>
+                <select id="orgDepartmentSelect" name="department_id" class="form-select w-full text-base" required>
+                    <option value="">Select Department</option>
+                    @foreach($departments ?? [] as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="hideAddOrgModal()" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green"><i class="fas fa-plus"></i> Add Organization</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -147,25 +183,44 @@
         <form id="addDepartmentForm" method="POST" action="{{ route('admin.departments.store') }}" class="px-6 pt-6 pb-2">
             @csrf
             <div class="mb-4">
-                <label class="block text-gray-700 mb-1">Department Name</label>
-                <input type="text" name="name" class="form-input w-full" required>
+                <label class="form-label text-base">Department Name</label>
+                <input type="text" name="name" class="form-input w-full text-base" required>
             </div>
             <div class="mb-4 flex gap-4">
                 <div class="w-1/2">
-                    <label class="block text-gray-700 mb-1">Code</label>
-                    <input type="text" name="code" class="form-input w-full" required>
+                    <label class="form-label text-base">Code</label>
+                    <input type="text" name="code" class="form-input w-full text-base" required>
                 </div>
                 <div class="w-1/2">
-                    <label class="block text-gray-700 mb-1">Color</label>
+                    <label class="form-label text-base">Color</label>
                     <input type="color" name="color" class="form-input w-16 h-10 p-0 border-0 align-middle" value="#00471B">
                 </div>
             </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 mb-1">Description</label>
-                <textarea name="description" class="form-input w-full" rows="2"></textarea>
-            </div>
-            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-gray-50 rounded-b-lg">
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
                 <button type="button" onclick="hideAddDepartmentModal()" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Type Modal (to be implemented) -->
+<div id="addTypeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h2 class="text-lg font-bold text-white m-0">Add Org Type</h2>
+            <button onclick="hideAddTypeModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="addTypeForm" method="POST" action="{{ route('admin.org_types.store') }}" class="px-6 pt-6 pb-2">
+            @csrf
+            <div class="mb-4">
+                <label class="form-label text-base">Type Name</label>
+                <input type="text" name="name" class="form-input w-full text-base" required>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="hideAddTypeModal()" class="btn btn-gray">Cancel</button>
                 <button type="submit" class="btn btn-green">Add</button>
             </div>
         </form>
@@ -185,17 +240,15 @@ function showAddDepartmentModal() {
 function hideAddDepartmentModal() {
     document.getElementById('addDepartmentModal').classList.add('hidden');
 }
+function showAddTypeModal() {
+    document.getElementById('addTypeModal').classList.remove('hidden');
+}
+function hideAddTypeModal() {
+    document.getElementById('addTypeModal').classList.add('hidden');
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     var deptSelect = document.getElementById('orgDepartmentSelect');
-    if (deptSelect) {
-        deptSelect.addEventListener('change', function() {
-            if (this.value === 'add_new') {
-                this.value = '';
-                showAddDepartmentModal();
-            }
-        });
-    }
 
     // AJAX submit for Add Department
     var addDeptForm = document.getElementById('addDepartmentForm');
@@ -211,18 +264,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(async response => {
+                if (!response.ok) {
+                    // Try to parse validation errors
+                    let errorMsg = 'Failed to add department.';
+                    try {
+                        const data = await response.json();
+                        if (data.errors) {
+                            errorMsg = Object.values(data.errors).flat().join('\n');
+                        }
+                    } catch {}
+                    alert(errorMsg);
+                    return;
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.success && data.department) {
+                if (data && data.success && data.department) {
                     // Add new department to dropdown
                     var option = document.createElement('option');
                     option.value = data.department.id;
                     option.textContent = data.department.name;
-                    deptSelect.insertBefore(option, deptSelect.querySelector('option[value="add_new"]'));
+                    deptSelect.appendChild(option);
                     deptSelect.value = data.department.id;
                     hideAddDepartmentModal();
                     addDeptForm.reset();
-                } else {
+                } else if (data && data.errors) {
+                    alert(Object.values(data.errors).flat().join('\n'));
+                } else if (data) {
                     alert('Failed to add department.');
                 }
             })
@@ -231,4 +300,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<style>
+#addOrgModal .form-input,
+#addOrgModal .form-select,
+#addOrgModal .form-label,
+#addDepartmentModal .form-input,
+#addDepartmentModal .form-select,
+#addDepartmentModal .form-label,
+#addTypeModal .form-input,
+#addTypeModal .form-select,
+#addTypeModal .form-label {
+    font-size: 14px !important;
+    height: auto;
+}
+</style>
 @endsection

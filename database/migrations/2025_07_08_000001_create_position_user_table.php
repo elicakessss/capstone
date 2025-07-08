@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('position_user', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('code', 50)->unique(); // Department code (e.g., CCS, COE, etc.) - Limited to 50 chars
-            $table->boolean('is_active')->default(true);
-            $table->string('color', 10)->nullable(); // Hex color code for department
+            $table->foreignId('position_id')->constrained('positions')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
+            $table->unique(['position_id', 'user_id']);
         });
     }
 
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('position_user');
     }
 };

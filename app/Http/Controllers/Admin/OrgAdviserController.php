@@ -12,7 +12,7 @@ class OrgAdviserController extends Controller
     public function search(Request $request, Org $org)
     {
         $q = $request->input('q');
-        $advisers = User::where('role', 'adviser')
+        $advisers = User::whereJsonContains('roles', 'adviser')
             ->where(function($query) use ($q) {
                 $query->where('name', 'like', "%$q%")
                       ->orWhere('email', 'like', "%$q%") ;

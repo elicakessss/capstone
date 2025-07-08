@@ -11,7 +11,7 @@
             <p class="text-gray-600 mt-1">Manage and participate in student councils</p>
         </div>
         @if(auth()->check() && (auth()->user()->role === 'adviser' || auth()->user()->role === 'admin'))
-        <button class="btn btn-primary">
+        <button id="createCouncilBtn" class="btn btn-primary">
             <i class="fas fa-plus mr-2"></i>
             Create Council
         </button>
@@ -134,6 +134,110 @@
         </div>
     </div>
     @endif
+
+    <!-- Modal for Creating Council/Org Term -->
+    <div id="createCouncilModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            <button id="closeCouncilModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&times;</button>
+            <h3 class="text-lg font-bold mb-4">Create Organization Term</h3>
+            @if(isset($assignedOrgs) && count($assignedOrgs) > 0)
+            <form id="createCouncilForm" method="POST" action="{{ route('councils.store') }}">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-1">Select Organization</label>
+                    <select name="org_id" id="orgSelect" class="form-select w-full" required>
+                        <option value="">-- Select --</option>
+                        @foreach($assignedOrgs as $org)
+                            <option value="{{ $org->id }}">{{ $org->name }} ({{ $org->type }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div id="academicYearSection" class="mb-4 hidden">
+                    <label class="block text-gray-700 font-medium mb-1">Academic Year <span class="text-red-500">*</span></label>
+                    <input type="text" name="academic_year" id="academicYearInput" class="form-input w-full" placeholder="e.g. 2025-2026">
+                    <div id="yearError" class="text-red-500 text-xs mt-1 hidden">This organization already exists for the selected academic year.</div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="cancelCouncilModalBtn" class="btn btn-sm btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary" id="submitCreateCouncilBtn" disabled>Create</button>
+                </div>
+            </form>
+            @else
+            <div class="text-gray-500 text-center py-8">No organizations available.</div>
+            <div class="flex justify-end mt-4">
+                <button type="button" id="cancelCouncilModalBtn" class="btn btn-sm btn-secondary">Close</button>
+            </div>
+            @endif
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const createCouncilBtn = document.getElementById('createCouncilBtn');
+            const createCouncilModal = document.getElementById('createCouncilModal');
+            const closeCouncilModalBtn = document.getElementById('closeCouncilModalBtn');
+            const cancelCouncilModalBtn = document.getElementById('cancelCouncilModalBtn');
+            const orgSelect = document.getElementById('orgSelect');
+            const academicYearSection = document.getElementById('academicYearSection');
+            const academicYearInput = document.getElementById('academicYearInput');
+            const submitCreateCouncilBtn = document.getElementById('submitCreateCouncilBtn');
+            const yearError = document.getElementById('yearError');
+
+            function openCouncilModal() { createCouncilModal.classList.remove('hidden'); }
+            function closeCouncilModal() { createCouncilModal.classList.add('hidden'); if(orgSelect){orgSelect.value = '';} if(academicYearInput){academicYearInput.value = '';} if(submitCreateCouncilBtn){submitCreateCouncilBtn.disabled = true;} if(yearError){yearError.classList.add('hidden');} if(academicYearSection){academicYearSection.classList.add('hidden');} }
+            if (createCouncilBtn) createCouncilBtn.addEventListener('click', openCouncilModal);
+            if (closeCouncilModalBtn) closeCouncilModalBtn.addEventListener('click', closeCouncilModal);
+            if (cancelCouncilModalBtn) cancelCouncilModalBtn.addEventListener('click', closeCouncilModal);
+
+            if(orgSelect && academicYearSection && submitCreateCouncilBtn) {
+                orgSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        academicYearSection.classList.remove('hidden');
+                        submitCreateCouncilBtn.disabled = true;
+                    } else {
+                        academicYearSection.classList.add('hidden');
+                        submitCreateCouncilBtn.disabled = true;
+                    }
+                });
+            }
+            if(academicYearInput && submitCreateCouncilBtn && yearError && orgSelect) {
+                let lastCheck = { org: '', year: '', result: null };
+                academicYearInput.addEventListener('input', function() {
+                    const orgId = orgSelect.value;
+                    const year = this.value.trim();
+                    submitCreateCouncilBtn.disabled = true;
+                    yearError.classList.add('hidden');
+                    if (!orgId || !year) return;
+                    // Only check if changed
+                    if (lastCheck.org === orgId && lastCheck.year === year && lastCheck.result !== null) {
+                        if (lastCheck.result) {
+                            yearError.classList.remove('hidden');
+                            submitCreateCouncilBtn.disabled = true;
+                        } else {
+                            yearError.classList.add('hidden');
+                            submitCreateCouncilBtn.disabled = false;
+                        }
+                        return;
+                    }
+                    fetch(`{{ route('councils.check-duplicate') }}?org_id=${encodeURIComponent(orgId)}&academic_year=${encodeURIComponent(year)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            lastCheck = { org: orgId, year: year, result: data.exists };
+                            if (data.exists) {
+                                yearError.classList.remove('hidden');
+                                submitCreateCouncilBtn.disabled = true;
+                            } else {
+                                yearError.classList.add('hidden');
+                                submitCreateCouncilBtn.disabled = false;
+                            }
+                        })
+                        .catch(() => {
+                            submitCreateCouncilBtn.disabled = true;
+                            yearError.classList.add('hidden');
+                        });
+                });
+            }
+        });
+    </script>
 </div>
 
 @push('scripts')

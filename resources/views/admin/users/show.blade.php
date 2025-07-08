@@ -57,93 +57,92 @@
 </div>
 
 <!-- Edit User Modal -->
-<div id="editUserModal" class="modal hidden">
-    <div class="modal-content p-0" style="border-radius:18px; min-width:350px; max-width:600px; width:100%; margin:auto;">
+<div id="editUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
         <!-- Modal Header -->
-        <div class="modal-header" style="border-radius:18px 18px 0 0; padding:1.5rem; background:#00471B; color:white;">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Edit User</h3>
-                <x-button onclick="closeModal('editUserModal')" variant="secondary" size="sm" icon="fas fa-times"></x-button>
-            </div>
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Edit User</h3>
+            <button onclick="closeModal('editUserModal')" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
         </div>
         <!-- Modal Body -->
-        <div class="modal-body p-0" style="padding:0;">
-            <form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" style="padding:1.5rem;">
-                @csrf
-                @method('PUT')
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="first_name" class="form-label">First Name</label>
-                        <input id="first_name" type="text" name="first_name" class="form-input" value="{{ old('first_name', $user->first_name) }}" required>
-                        <p class="form-error hidden" id="first_name_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="last_name" class="form-label">Last Name</label>
-                        <input id="last_name" type="text" name="last_name" class="form-input" value="{{ old('last_name', $user->last_name) }}" required>
-                        <p class="form-error hidden" id="last_name_error"></p>
-                    </div>
+        <form id="editUserForm" action="{{ route('admin.users.update', $user) }}" method="POST" class="px-6 pt-6 pb-2">
+            @csrf
+            @method('PUT')
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input id="first_name" type="text" name="first_name" class="form-input" value="{{ old('first_name', $user->first_name) }}" required>
+                    <p class="form-error hidden" id="first_name_error"></p>
                 </div>
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="id_number" class="form-label">ID Number</label>
-                        <input id="id_number" type="text" name="id_number" class="form-input" value="{{ old('id_number', $user->id_number) }}" required>
-                        <p class="form-error hidden" id="id_number_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input id="email" type="email" name="email" class="form-input" value="{{ old('email', $user->email) }}" required>
-                        <p class="form-error hidden" id="email_error"></p>
-                    </div>
+                <div class="form-col flex-1">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input id="last_name" type="text" name="last_name" class="form-input" value="{{ old('last_name', $user->last_name) }}" required>
+                    <p class="form-error hidden" id="last_name_error"></p>
                 </div>
-                <div class="mb-4">
-                    <label for="department_id" class="form-label">Department</label>
-                    <select id="department_id" name="department_id" class="form-select" required>
-                        <option value="">Select Department</option>
-                        @foreach($departments ?? [] as $department)
-                            <option value="{{ $department->id }}" {{ $user->department_id == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
-                        @endforeach
-                    </select>
-                    <p class="form-error hidden" id="department_id_error"></p>
-                </div>
-                <div class="mb-4">
-                    <label for="role" class="form-label">Role</label>
-                    <select id="role" name="role" class="form-select" required>
-                        <option value="">Select Role</option>
-                        <option value="student" {{ $user->role == 'student' ? 'selected' : '' }}>Student</option>
-                        <option value="adviser" {{ $user->role == 'adviser' ? 'selected' : '' }}>Adviser</option>
-                        <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Administrator</option>
-                    </select>
-                    <p class="form-error hidden" id="role_error"></p>
-                </div>
-                <div class="mb-4">
-                    <label for="bio" class="form-label">Bio</label>
-                    <textarea id="bio" name="bio" class="form-input" rows="2">{{ old('bio', $user->bio) }}</textarea>
-                    <p class="form-error hidden" id="bio_error"></p>
-                </div>
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="password" class="form-label">Password <span class="text-gray-400">(leave blank to keep current)</span></label>
-                        <input id="password" type="password" name="password" class="form-input" placeholder="Enter new password (min 8 chars)">
-                        <p class="form-error hidden" id="password_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="password_confirmation" class="form-label">Confirm Password</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" class="form-input" placeholder="Confirm new password">
-                        <p class="form-error hidden" id="password_confirmation_error"></p>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <x-button onclick="submitEditUserForm(event)" variant="primary" icon="fas fa-save">Save Changes</x-button>
-                </div>
-            </form>
-            <div class="flex justify-end space-x-3 mt-2">
-                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <x-button type="submit" variant="danger" icon="fas fa-trash">Delete</x-button>
-                </form>
             </div>
-        </div>
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="id_number" class="form-label">ID Number</label>
+                    <input id="id_number" type="text" name="id_number" class="form-input" value="{{ old('id_number', $user->id_number) }}" required>
+                    <p class="form-error hidden" id="id_number_error"></p>
+                </div>
+                <div class="form-col flex-1">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input id="email" type="email" name="email" class="form-input" value="{{ old('email', $user->email) }}" required>
+                    <p class="form-error hidden" id="email_error"></p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="department_id" class="form-label">Department</label>
+                <select id="department_id" name="department_id" class="form-select" required>
+                    <option value="">Select Department</option>
+                    @foreach($departments ?? [] as $department)
+                        <option value="{{ $department->id }}" {{ $user->department_id == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
+                    @endforeach
+                </select>
+                <p class="form-error hidden" id="department_id_error"></p>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Roles</label>
+                <div class="flex flex-wrap gap-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="student" {{ (is_array(old('roles', $user->roles ?? [])) && in_array('student', old('roles', $user->roles ?? []))) ? 'checked' : '' }}>
+                        <span class="ml-2">Student</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="adviser" {{ (is_array(old('roles', $user->roles ?? [])) && in_array('adviser', old('roles', $user->roles ?? []))) ? 'checked' : '' }}>
+                        <span class="ml-2">Adviser</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="admin" {{ (is_array(old('roles', $user->roles ?? [])) && in_array('admin', old('roles', $user->roles ?? []))) ? 'checked' : '' }}>
+                        <span class="ml-2">Administrator</span>
+                    </label>
+                </div>
+                <p class="form-error hidden" id="roles_error"></p>
+            </div>
+            <div class="mb-4">
+                <label for="bio" class="form-label">Bio</label>
+                <textarea id="bio" name="bio" class="form-input" rows="2">{{ old('bio', $user->bio) }}</textarea>
+                <p class="form-error hidden" id="bio_error"></p>
+            </div>
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="password" class="form-label">Password</label>
+                    <input id="password" type="password" name="password" class="form-input" placeholder="Enter new password (min 8 chars)">
+                    <p class="form-error hidden" id="password_error"></p>
+                </div>
+                <div class="form-col flex-1">
+                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" class="form-input" placeholder="Confirm new password">
+                    <p class="form-error hidden" id="password_confirmation_error"></p>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 mb-2" style="margin-top:-0.5rem;">Leave blank to keep current password</div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="closeModal('editUserModal')" class="btn btn-gray">Cancel</button>
+                <x-button onclick="submitEditUserForm(event)" variant="primary" icon="fas fa-save">Save Changes</x-button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -201,7 +200,23 @@ function submitEditUserForm(event) {
             'X-Requested-With': 'XMLHttpRequest',
         }
     })
-    .then(response => {
+    .then(async response => {
+        if (response.status === 422) {
+            const data = await response.json();
+            if (data.errors) {
+                let messages = [];
+                for (let field in data.errors) {
+                    if (data.errors.hasOwnProperty(field)) {
+                        messages.push(data.errors[field].join(' '));
+                    }
+                }
+                showEditFormErrors(data.errors);
+                showToast(messages.join(' '), 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return Promise.reject(); // Prevents further .then execution
+            }
+        }
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return response.json();
     })
@@ -276,7 +291,6 @@ function validateEditForm(form) {
         'last_name',
         'id_number',
         'email',
-        'role',
         'department_id'
     ];
     requiredFields.forEach(fieldName => {
@@ -295,6 +309,17 @@ function validateEditForm(form) {
             }
         }
     });
+    // At least one role must be checked
+    const roles = form.querySelectorAll('input[name="roles[]"]:checked');
+    if (roles.length === 0) {
+        isValid = false;
+        const errorElement = document.getElementById('roles_error');
+        if (errorElement) {
+            errorElement.textContent = 'At least one role is required.';
+            errorElement.classList.remove('hidden');
+            errorElement.classList.add('mt-1', 'text-sm', 'text-red-600');
+        }
+    }
     // Email format validation
     const email = form.querySelector('[name="email"]');
     if (email && email.value && !/^\S+@\S+\.\S+$/.test(email.value)) {
@@ -339,7 +364,7 @@ function validateEditForm(form) {
 function setupEditUserValidation() {
     const form = document.getElementById('editUserForm');
     if (!form) return;
-    const requiredFields = ['first_name', 'last_name', 'id_number', 'email', 'role', 'department_id', 'password', 'password_confirmation'];
+    const requiredFields = ['first_name', 'last_name', 'id_number', 'email', 'department_id', 'password', 'password_confirmation'];
     requiredFields.forEach(fieldName => {
         const field = form.querySelector(`[name="${fieldName}"]`);
         if (field) {
@@ -347,6 +372,21 @@ function setupEditUserValidation() {
             field.addEventListener('change', () => validateEditField(fieldName));
             field.addEventListener('blur', () => validateEditField(fieldName));
         }
+    });
+    // Add event listeners for roles checkboxes
+    const roleCheckboxes = form.querySelectorAll('input[name="roles[]"]');
+    roleCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const errorElement = document.getElementById('roles_error');
+            if (form.querySelectorAll('input[name="roles[]"]:checked').length === 0) {
+                errorElement.textContent = 'At least one role is required.';
+                errorElement.classList.remove('hidden');
+                errorElement.classList.add('mt-1', 'text-sm', 'text-red-600');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.add('hidden');
+            }
+        });
     });
 }
 function validateEditField(fieldName) {

@@ -42,11 +42,11 @@
             @endif
             <!-- Edit/Delete buttons -->
             <div class="mt-4 flex gap-2">
-                <a href="{{ route('admin.orgs.edit', $org) }}" class="btn btn-sm btn-primary">Edit</a>
+                <button onclick="showEditOrgModal()" class="btn btn-blue" type="button">Edit</button>
                 <form action="{{ route('admin.orgs.destroy', $org) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this organization?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-red">Delete</button>
                 </form>
             </div>
         </div>
@@ -54,7 +54,7 @@
         <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-900">Advisers who can use this</h2>
-                <button id="assignAdviserBtn" class="btn btn-sm btn-primary" type="button">Assign Adviser</button>
+                <button id="assignAdviserBtn" class="btn btn-green" type="button"><i class="fas fa-plus"></i> Assign Adviser</button>
             </div>
             <div class="text-gray-500 text-sm mb-2">@if(isset($advisers) && $advisers->count())
                 <ul>
@@ -72,11 +72,15 @@
         <div class="bg-white rounded-lg shadow p-6 min-h-[220px] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-900">Positions</h2>
-                <button id="addPositionBtn" class="btn btn-sm btn-primary" type="button">Add Branch Position</button>
+                <button id="addPositionBtn" class="btn btn-green" type="button"><i class="fas fa-plus"></i> Position</button>
             </div>
+            @php
+                // Sort positions by 'order' ascending (1 is highest)
+                $sortedPositions = $positions->sortBy('order');
+            @endphp
             @if($positions->count())
                 <ul class="mb-2">
-                    @foreach($positions as $position)
+                    @foreach($sortedPositions as $position)
                         <li class="mb-2 p-3 bg-gray-50 rounded border flex flex-col md:flex-row md:items-center md:justify-between">
                             <div>
                                 <span class="font-semibold">{{ $position->title }}</span>
@@ -85,6 +89,15 @@
                                         <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded mr-1">{{ $dept->name }}</span>
                                     @endforeach
                                 </span>
+                                <span class="text-xs text-gray-400 ml-2">(Slots: {{ $position->slots }}, Order: {{ $position->order }})</span>
+                            </div>
+                            <div class="flex gap-2 mt-2 md:mt-0">
+                                <button class="btn btn-blue" type="button" onclick="showEditPositionModal({{ $position->id }}, '{{ addslashes($position->title) }}', '{{ addslashes($position->description) }}', @json($position->departments->pluck('id')), {{ $position->slots }}, {{ $position->order }})" >Edit</button>
+                                <form action="{{ route('admin.positions.destroy', ['position' => $position->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this position?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-red">Delete</button>
+                                </form>
                             </div>
                         </li>
                     @endforeach
@@ -95,110 +108,248 @@
             <!-- Position management UI goes here -->
         </div>
     </div>
-    <!-- Modal for Adding Position -->
-    <div id="addPositionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-            <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&times;</button>
-            <h3 class="text-lg font-bold mb-4">Add Branch Position</h3>
-            <form method="POST" action="{{ route('admin.orgs.positions.store', $org) }}">
-                @csrf
+</div>
+<!-- Modal for Adding Position -->
+<div id="addPositionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Add Position</h3>
+            <button id="closeModalBtn" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">&times;</button>
+        </div>
+        <form method="POST" action="{{ route('admin.orgs.positions.store', $org) }}" class="px-6 pt-6 pb-2">
+            @csrf
+            <div class="mb-4">
+                <label class="form-label text-base">Position Title</label>
+                <input type="text" name="title" class="form-input w-full text-base" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-base">Allowed Departments</label>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                    @foreach($departments as $department)
+                        <div class="flex items-center">
+                            <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="dept-{{ $department->id }}" class="mr-2">
+                            <label for="dept-{{ $department->id }}" class="text-gray-800">{{ $department->name }}</label>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="mb-4 flex gap-4">
+                <div class="w-1/2">
+                    <label class="form-label text-base">Slots</label>
+                    <input type="number" name="slots" id="addPositionSlots" class="form-input w-full text-base" min="1" required>
+                </div>
+                <div class="w-1/2">
+                    <label class="form-label text-base">Order</label>
+                    <input type="number" name="order" id="addPositionOrder" class="form-input w-full text-base" min="0">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" id="cancelModalBtn" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Modal for Assigning Adviser -->
+<div id="assignAdviserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Assign Adviser</h3>
+            <button id="closeAdviserModalBtn" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">&times;</button>
+        </div>
+        <form method="POST" action="{{ route('admin.orgs.assignAdviser', $org) }}" class="px-6 pt-6 pb-2">
+            @csrf
+            <div class="mb-4">
+                <label class="form-label text-base">Search Adviser</label>
+                <input type="text" id="adviserSearchInput" class="form-input w-full text-base" placeholder="Type name or email...">
+            </div>
+            <div id="adviserSearchResults" class="mb-4 max-h-40 overflow-y-auto border rounded p-2 bg-gray-50"></div>
+            <input type="hidden" name="adviser_id" id="selectedAdviserId">
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" id="cancelAdviserModalBtn" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green" id="assignAdviserSubmitBtn" disabled>Assign</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Edit Organization Modal -->
+<div id="editOrgModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Edit Organization</h3>
+            <button onclick="hideEditOrgModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('admin.orgs.update', $org) }}" class="px-6 pt-6 pb-2">
+            @csrf
+            @method('PUT')
+            <div class="mb-4">
+                <label class="form-label text-base">Organization Name</label>
+                <input type="text" name="name" class="form-input w-full text-base" value="{{ old('name', $org->name) }}" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-base">Type</label>
+                <select name="type" class="form-select w-full text-base" required>
+                    <option value="">Select Type</option>
+                    @foreach($orgTypes ?? [] as $orgType)
+                        <option value="{{ $orgType->name }}" {{ (old('type', $org->type) == $orgType->name) ? 'selected' : '' }}>{{ $orgType->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-base">Department</label>
+                <select name="department_id" class="form-select w-full text-base" required>
+                    <option value="">Select Department</option>
+                    @foreach($departments ?? [] as $department)
+                        <option value="{{ $department->id }}" {{ (old('department_id', $org->department_id) == $department->id) ? 'selected' : '' }}>{{ $department->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="hideEditOrgModal()" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Edit Position Modal -->
+<div id="editPositionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Edit Position</h3>
+            <button id="closeEditPositionModalBtn" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">&times;</button>
+        </div>
+        <form id="editPositionForm" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="px-6 pt-6 pb-2">
                 <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-1">Position Title</label>
-                    <input type="text" name="title" class="form-input w-full" required>
+                    <label class="form-label text-base">Position Title</label>
+                    <input type="text" name="title" id="editPositionTitle" class="form-input w-full text-base" required>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-1">Allowed Departments</label>
-                    <div class="space-y-2 max-h-40 overflow-y-auto">
+                    <label class="form-label text-base">Description</label>
+                    <textarea name="description" id="editPositionDescription" class="form-input w-full text-base" rows="2"></textarea>
+                </div>
+                <div class="mb-4 flex gap-4">
+                    <div class="w-1/2">
+                        <label class="form-label text-base">Slots</label>
+                        <input type="number" name="slots" id="editPositionSlots" class="form-input w-full text-base" min="1" required>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="form-label text-base">Order (optional)</label>
+                        <input type="number" name="order" id="editPositionOrder" class="form-input w-full text-base" min="0">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-base">Allowed Departments</label>
+                    <div class="space-y-2 max-h-40 overflow-y-auto" id="editPositionDepartments">
                         @foreach($departments as $department)
                             <div class="flex items-center">
-                                <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="dept-{{ $department->id }}" class="mr-2">
-                                <label for="dept-{{ $department->id }}" class="text-gray-800">{{ $department->name }}</label>
+                                <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="edit-dept-{{ $department->id }}" class="mr-2 edit-dept-checkbox">
+                                <label for="edit-dept-{{ $department->id }}" class="text-gray-800">{{ $department->name }}</label>
                             </div>
                         @endforeach
                     </div>
                 </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="cancelModalBtn" class="btn btn-sm btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                    <button type="button" id="cancelEditPositionModalBtn" class="btn btn-gray">Cancel</button>
+                    <button type="submit" class="btn btn-green">Save Changes</button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
-    <!-- Modal for Assigning Adviser -->
-    <div id="assignAdviserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-            <button id="closeAdviserModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&times;</button>
-            <h3 class="text-lg font-bold mb-4">Assign Adviser</h3>
-            <form method="POST" action="{{ route('admin.orgs.assignAdviser', $org) }}">
-                @csrf
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-1">Search Adviser</label>
-                    <input type="text" id="adviserSearchInput" class="form-input w-full" placeholder="Type name or email...">
-                </div>
-                <div id="adviserSearchResults" class="mb-4 max-h-40 overflow-y-auto border rounded p-2 bg-gray-50"></div>
-                <input type="hidden" name="adviser_id" id="selectedAdviserId">
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="cancelAdviserModalBtn" class="btn btn-sm btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-primary" id="assignAdviserSubmitBtn" disabled>Assign</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('addPositionModal');
-            const openBtn = document.getElementById('addPositionBtn');
-            const closeBtn = document.getElementById('closeModalBtn');
-            const cancelBtn = document.getElementById('cancelModalBtn');
-            function openModal() { modal.classList.remove('hidden'); }
-            function closeModal() { modal.classList.add('hidden'); }
-            openBtn.addEventListener('click', openModal);
-            closeBtn.addEventListener('click', closeModal);
-            cancelBtn.addEventListener('click', closeModal);
-
-            // Adviser modal functionality
-            const adviserModal = document.getElementById('assignAdviserModal');
-            const openAdviserBtn = document.getElementById('assignAdviserBtn');
-            const closeAdviserBtn = document.getElementById('closeAdviserModalBtn');
-            const cancelAdviserBtn = document.getElementById('cancelAdviserModalBtn');
-            const adviserSearchInput = document.getElementById('adviserSearchInput');
-            const adviserSearchResults = document.getElementById('adviserSearchResults');
-            const selectedAdviserId = document.getElementById('selectedAdviserId');
-            const assignAdviserSubmitBtn = document.getElementById('assignAdviserSubmitBtn');
-
-            function openAdviserModal() { adviserModal.classList.remove('hidden'); }
-            function closeAdviserModal() { adviserModal.classList.add('hidden'); adviserSearchResults.innerHTML = ''; adviserSearchInput.value = ''; assignAdviserSubmitBtn.disabled = true; }
-            openAdviserBtn.addEventListener('click', openAdviserModal);
-            closeAdviserBtn.addEventListener('click', closeAdviserModal);
-            cancelAdviserBtn.addEventListener('click', closeAdviserModal);
-
-            adviserSearchInput.addEventListener('input', function() {
-                const query = adviserSearchInput.value.trim();
-                adviserSearchResults.innerHTML = '';
-                assignAdviserSubmitBtn.disabled = true;
-                selectedAdviserId.value = '';
-                if (query.length < 2) return;
-                fetch(`{{ route('admin.orgs.searchAdvisers', $org) }}?q=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.length === 0) {
-                            adviserSearchResults.innerHTML = '<div class="text-gray-500 text-sm">No advisers found.</div>';
-                        } else {
-                            adviserSearchResults.innerHTML = data.map(adviser =>
-                                `<div class='p-2 hover:bg-green-100 rounded cursor-pointer adviser-result' data-id='${adviser.id}' data-name='${adviser.name}'>${adviser.name} <span class='text-xs text-gray-500'>(${adviser.email})</span></div>`
-                            ).join('');
-                            document.querySelectorAll('.adviser-result').forEach(el => {
-                                el.addEventListener('click', function() {
-                                    selectedAdviserId.value = this.dataset.id;
-                                    adviserSearchInput.value = this.dataset.name;
-                                    assignAdviserSubmitBtn.disabled = false;
-                                    adviserSearchResults.innerHTML = '';
-                                });
-                            });
-                        }
-                    });
-            });
-        });
-    </script>
 </div>
+<style>
+#editOrgModal .form-input,
+#editOrgModal .form-select,
+#editOrgModal .form-label,
+#addPositionModal .form-input,
+#addPositionModal .form-select,
+#addPositionModal .form-label,
+#assignAdviserModal .form-input,
+#assignAdviserModal .form-select,
+#assignAdviserModal .form-label,
+#editPositionModal .form-input,
+#editPositionModal .form-select,
+#editPositionModal .form-label {
+    font-size: 14px !important;
+}
+</style>
+<script>
+function showEditOrgModal() {
+    document.getElementById('editOrgModal').classList.remove('hidden');
+}
+function hideEditOrgModal() {
+    document.getElementById('editOrgModal').classList.add('hidden');
+}
+document.getElementById('assignAdviserBtn').addEventListener('click', function() {
+    document.getElementById('assignAdviserModal').classList.remove('hidden');
+});
+document.getElementById('closeAdviserModalBtn').addEventListener('click', function() {
+    document.getElementById('assignAdviserModal').classList.add('hidden');
+});
+document.getElementById('cancelAdviserModalBtn').addEventListener('click', function() {
+    document.getElementById('assignAdviserModal').classList.add('hidden');
+});
+document.getElementById('addPositionBtn').addEventListener('click', function() {
+    document.getElementById('addPositionModal').classList.remove('hidden');
+});
+document.getElementById('closeModalBtn').addEventListener('click', function() {
+    document.getElementById('addPositionModal').classList.add('hidden');
+});
+document.getElementById('cancelModalBtn').addEventListener('click', function() {
+    document.getElementById('addPositionModal').classList.add('hidden');
+});
+document.getElementById('adviserSearchInput').addEventListener('input', function() {
+    var query = this.value;
+    if (query.length >= 2) {
+        fetch(`/admin/orgs/${@json($org->id)}/search-advisers?q=` + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                var resultsDiv = document.getElementById('adviserSearchResults');
+                resultsDiv.innerHTML = '';
+                data.forEach(adviser => {
+                    var div = document.createElement('div');
+                    div.className = 'py-2 px-3 rounded cursor-pointer hover:bg-gray-100';
+                    div.innerHTML = `${adviser.name} (${adviser.email})`;
+                    div.addEventListener('click', function() {
+                        document.getElementById('selectedAdviserId').value = adviser.id;
+                        document.getElementById('assignAdviserSubmitBtn').disabled = false;
+                        resultsDiv.innerHTML = '';
+                    });
+                    resultsDiv.appendChild(div);
+                });
+            });
+    } else {
+        document.getElementById('adviserSearchResults').innerHTML = '';
+    }
+});
+function showEditPositionModal(id, title, description, departments, slots, order) {
+    const modal = document.getElementById('editPositionModal');
+    document.getElementById('editPositionTitle').value = title;
+    document.getElementById('editPositionDescription').value = description || '';
+    document.getElementById('editPositionSlots').value = slots;
+    document.getElementById('editPositionOrder').value = order;
+    // Uncheck all department checkboxes first
+    document.querySelectorAll('.edit-dept-checkbox').forEach(cb => cb.checked = false);
+    // Check the departments for this position
+    if (departments && Array.isArray(departments)) {
+        departments.forEach(function(deptId) {
+            const cb = document.getElementById('edit-dept-' + deptId);
+            if (cb) cb.checked = true;
+        });
+    }
+    // Set the form action
+    document.getElementById('editPositionForm').action = '/admin/positions/' + id;
+    modal.classList.remove('hidden');
+}
+document.getElementById('closeEditPositionModalBtn').addEventListener('click', function() {
+    document.getElementById('editPositionModal').classList.add('hidden');
+});
+document.getElementById('cancelEditPositionModalBtn').addEventListener('click', function() {
+    document.getElementById('editPositionModal').classList.add('hidden');
+});
+</script>
 @endsection

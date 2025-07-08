@@ -11,6 +11,9 @@ class Position extends Model
     protected $fillable = [
         'org_id',
         'title',
+        'description',
+        'slots',
+        'order',
     ];
 
     public function org()
@@ -21,5 +24,10 @@ class Position extends Model
     public function departments()
     {
         return $this->belongsToMany(Department::class, 'department_position');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'position_user', 'position_id', 'user_id');
     }
 }

@@ -67,7 +67,8 @@ class UsersController extends Controller
                 'last_name' => ['required', 'string', 'max:255'],
                 'id_number' => ['required', 'string', 'max:255', 'unique:users,id_number'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-                'role' => ['required', 'in:student,adviser,admin'],
+                'roles' => ['required', 'array', 'min:1'],
+                'roles.*' => ['in:student,adviser,admin'],
                 'department_id' => ['required', 'exists:departments,id'],
                 'password' => ['required', 'string', 'min:8', 'confirmed'],
             ], [
@@ -77,7 +78,9 @@ class UsersController extends Controller
                 'id_number.unique' => 'This ID number is already registered in the system.',
                 'email.required' => 'Email address is required.',
                 'email.unique' => 'This email address is already registered in the system.',
-                'role.required' => 'Role is required.',
+                'roles.required' => 'At least one role is required.',
+                'roles.min' => 'At least one role is required.',
+                'roles.*.in' => 'Invalid role selected.',
                 'department_id.required' => 'Department is required.',
                 'department_id.exists' => 'Selected department is invalid.',
                 'password.required' => 'Password is required.',
@@ -117,7 +120,8 @@ class UsersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while creating the user.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(), // Show the real error for debugging
+                'trace' => $e->getTraceAsString(), // Optional: include stack trace for deeper debugging
             ], 500);
         }
     }
@@ -149,7 +153,9 @@ class UsersController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'id_number' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', 'in:student,adviser,admin'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['in:student,adviser,admin'],
+            'role' => ['nullable', 'in:student,adviser,admin'], // keep for backward compatibility
             'department_id' => ['nullable', 'exists:departments,id'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_active' => ['boolean'],
@@ -170,6 +176,13 @@ class UsersController extends Controller
 
         try {
             $user->update($validated);
+
+            // Save roles as array
+            $user->roles = $validated['roles'] ?? [];
+            // Optionally, set is_admin and is_adviser flags for convenience
+            $user->is_admin = in_array('admin', $user->roles ?? []);
+            $user->is_adviser = in_array('adviser', $user->roles ?? []);
+            $user->save();
 
             if ($request->expectsJson()) {
                 return response()->json([

@@ -44,10 +44,10 @@
     <!-- Tabbed Interface -->
     <div x-data="{ tab: '{{ request('tab', 'accounts') }}' }" class="mt-6">
         <div class="flex border-b border-gray-200 mb-6">
-            <button @click="tab = 'accounts'" :class="tab === 'accounts' ? 'border-green-700 text-green-700' : 'border-transparent text-gray-500 hover:text-green-700 hover:border-green-700'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
+            <button @click="tab = 'accounts'" :class="tab === 'accounts' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
                 Accounts
             </button>
-            <button @click="tab = 'requests'" :class="tab === 'requests' ? 'border-green-700 text-green-700' : 'border-transparent text-gray-500 hover:text-green-700 hover:border-green-700'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
+            <button @click="tab = 'requests'" :class="tab === 'requests' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none">
                 Requests
             </button>
         </div>
@@ -88,7 +88,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <!-- Role -->
+                                    <!-- Role(s) -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
                                             $roleColors = [
@@ -96,12 +96,20 @@
                                                 'adviser' => 'bg-blue-100 text-blue-800',
                                                 'student' => 'bg-green-100 text-green-800'
                                             ];
-                                            $colorClass = $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800';
-                                            $roleDisplay = $user->role === 'admin' ? 'Administrator' : ucfirst($user->role);
+                                            $roles = $user->roles ?? [];
+                                            if (empty($roles) && $user->role) {
+                                                $roles = [$user->role];
+                                            }
                                         @endphp
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
-                                            {{ $roleDisplay }}
-                                        </span>
+                                        @foreach($roles as $role)
+                                            @php
+                                                $colorClass = $roleColors[$role] ?? 'bg-gray-100 text-gray-800';
+                                                $roleDisplay = $role === 'admin' ? 'Administrator' : ucfirst($role);
+                                            @endphp
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }} mr-1">
+                                                {{ $roleDisplay }}
+                                            </span>
+                                        @endforeach
                                     </td>
                                     <!-- Department -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -242,190 +250,151 @@
 </div>
 
 <!-- Add User Modal -->
-<div id="addUserModal" class="modal hidden">
-    <div class="modal-content p-0" style="border-radius:18px;">
+<div id="addUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
         <!-- Modal Header -->
-        <div class="modal-header" style="border-radius:18px 18px 0 0; padding:1.5rem; background:#00471B; color:white;">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Add New User</h3>
-                <x-button
-                    onclick="closeModal('addUserModal')"
-                    variant="secondary"
-                    size="sm"
-                    icon="fas fa-times">
-                </x-button>
-            </div>
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Add User</h3>
+            <button onclick="closeModal('addUserModal')" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
         </div>
         <!-- Modal Body -->
-        <div class="modal-body p-0" style="padding:0;">
-            <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST" style="padding:1.5rem;">
-                @csrf
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="first_name" class="form-label">First Name</label>
-                        <input id="first_name" type="text" name="first_name" class="form-input" placeholder="Enter first name" required>
-                        <p class="form-error hidden" id="first_name_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="last_name" class="form-label">Last Name</label>
-                        <input id="last_name" type="text" name="last_name" class="form-input" placeholder="Enter last name" required>
-                        <p class="form-error hidden" id="last_name_error"></p>
-                    </div>
+        <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST" class="px-6 pt-6 pb-2">
+            @csrf
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input id="first_name" type="text" name="first_name" class="form-input" placeholder="Enter first name" required>
+                    <p class="form-error hidden" id="first_name_error"></p>
                 </div>
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="id_number" class="form-label">ID Number</label>
-                        <input id="id_number" type="text" name="id_number" class="form-input" placeholder="Enter ID number" required>
-                        <p class="form-error hidden" id="id_number_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input id="email" type="email" name="email" class="form-input" placeholder="Enter email address" required>
-                        <p class="form-error hidden" id="email_error"></p>
-                    </div>
+                <div class="form-col flex-1">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input id="last_name" type="text" name="last_name" class="form-input" placeholder="Enter last name" required>
+                    <p class="form-error hidden" id="last_name_error"></p>
                 </div>
-                <div class="mb-4">
-                    <label for="department_id" class="form-label">Department</label>
-                    <select id="department_id" name="department_id" class="form-select" required>
-                        <option value="">Select Department</option>
-                        @foreach($departments ?? [] as $department)
-                            <option value="{{ $department->id }}">{{ $department->name }}</option>
-                        @endforeach
-                    </select>
-                    <p class="form-error hidden" id="department_id_error"></p>
+            </div>
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="id_number" class="form-label">ID Number</label>
+                    <input id="id_number" type="text" name="id_number" class="form-input" placeholder="Enter ID number" required>
+                    <p class="form-error hidden" id="id_number_error"></p>
                 </div>
-                <div class="mb-4">
-                    <label for="role" class="form-label">Role</label>
-                    <select id="role" name="role" class="form-select" required>
-                        <option value="">Select Role</option>
-                        <option value="student">Student</option>
-                        <option value="adviser">Adviser</option>
-                        <option value="admin">Administrator</option>
-                    </select>
-                    <p class="form-error hidden" id="role_error"></p>
+                <div class="form-col flex-1">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input id="email" type="email" name="email" class="form-input" placeholder="Enter email address" required>
+                    <p class="form-error hidden" id="email_error"></p>
                 </div>
-                <div class="form-row" style="display: flex; gap: 1rem;">
-                    <div class="form-col" style="flex: 1;">
-                        <label for="password" class="form-label">Password</label>
-                        <input id="password" type="password" name="password" class="form-input" placeholder="Enter password (minimum 8 characters)" required minlength="8">
-                        <p class="form-error hidden" id="password_error"></p>
-                    </div>
-                    <div class="form-col" style="flex: 1;">
-                        <label for="password_confirmation" class="form-label">Confirm Password</label>
-                        <input id="password_confirmation" type="password" name="password_confirmation" class="form-input" placeholder="Confirm password" required minlength="8">
-                        <p class="form-error hidden" id="password_confirmation_error"></p>
-                    </div>
+            </div>
+            <div class="mb-4">
+                <label for="department_id" class="form-label">Department</label>
+                <select id="department_id" name="department_id" class="form-select" required>
+                    <option value="">Select Department</option>
+                    @foreach($departments ?? [] as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                    @endforeach
+                </select>
+                <p class="form-error hidden" id="department_id_error"></p>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Roles</label>
+                <div class="flex flex-wrap gap-4">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="student">
+                        <span class="ml-2">Student</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="adviser">
+                        <span class="ml-2">Adviser</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="roles[]" value="admin">
+                        <span class="ml-2">Administrator</span>
+                    </label>
                 </div>
-            </form>
-        </div>
-        <!-- Modal Footer -->
-        <div class="modal-footer" style="border-radius:0 0 18px 18px; background:#f9fafb; padding:1rem 1.5rem; border-top:1px solid #e5e7eb;">
-            <div class="flex justify-end space-x-3">
+                <p class="form-error hidden" id="roles_error"></p>
+            </div>
+            <div class="form-row flex gap-4 mb-4">
+                <div class="form-col flex-1">
+                    <label for="password" class="form-label">Password</label>
+                    <input id="password" type="password" name="password" class="form-input" placeholder="Enter password (minimum 8 characters)" required minlength="8">
+                    <p class="form-error hidden" id="password_error"></p>
+                </div>
+                <div class="form-col flex-1">
+                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" class="form-input" placeholder="Confirm password" required minlength="8">
+                    <p class="form-error hidden" id="password_confirmation_error"></p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="closeModal('addUserModal')" class="btn btn-gray">Cancel</button>
                 <button type="submit" onclick="submitAddUserForm(event)" class="btn btn-green">
                     <i class="fas fa-user-plus"></i> Add User
                 </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
 <!-- Approve Modal -->
-<div id="approveModal" class="modal hidden">
-    <div class="modal-content p-0" style="border-radius:18px;">
-        <!-- Modal Header -->
-        <div class="modal-header" style="border-radius:18px 18px 0 0; padding:1.5rem; background:#00471B; color:white;">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Approve Registration Request</h3>
-                <x-button
-                    onclick="closeModal('approveModal')"
-                    variant="secondary"
-                    size="sm"
-                    icon="fas fa-times">
-                </x-button>
+<div id="approveModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Approve User Request</h3>
+            <button onclick="closeModal('approveModal')" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="approveRequestForm" method="POST" class="px-6 pt-6 pb-2">
+            @csrf
+            <input type="hidden" name="request_id" id="approve_request_id">
+            <div class="mb-4">
+                <label for="student_name" class="form-label">Student Name</label>
+                <input id="student_name" type="text" name="student_name" class="form-input" required readonly>
             </div>
-        </div>
-        <!-- Modal Body -->
-        <div class="modal-body p-0" style="padding:0;">
-            <form id="approveRequestForm" method="POST" style="padding:1.5rem;">
-                @csrf
-                <input type="hidden" name="request_id" id="approve_request_id">
-                <div class="mb-4">
-                    <label for="student_name" class="form-label">Student Name</label>
-                    <input id="student_name" type="text" name="student_name" class="form-input" placeholder="Enter student name" required readonly>
-                </div>
-                <div class="mb-4">
-                    <label for="student_email" class="form-label">Student Email</label>
-                    <input id="student_email" type="email" name="student_email" class="form-input" placeholder="Enter student email" required readonly>
-                </div>
-                <div class="mb-4">
-                    <label for="student_department" class="form-label">Department</label>
-                    <input id="student_department" type="text" name="student_department" class="form-input" placeholder="Enter department" required readonly>
-                </div>
-                <div class="mb-4">
-                    <label for="student_id_number" class="form-label">ID Number</label>
-                    <input id="student_id_number" type="text" name="student_id_number" class="form-input" placeholder="Enter ID number" required readonly>
-                </div>
-                <div class="mb-4">
-                    <label for="student_role" class="form-label">Role</label>
-                    <input id="student_role" type="text" name="student_role" class="form-input" placeholder="Enter role" required readonly>
-                </div>
-                <div class="mb-4">
-                    <label for="approval_notes" class="form-label">Approval Notes</label>
-                    <textarea id="approval_notes" name="approval_notes" class="form-textarea" placeholder="Enter any notes for the student (optional)"></textarea>
-                </div>
-            </form>
-        </div>
-        <!-- Modal Footer -->
-        <div class="modal-footer" style="border-radius:0 0 18px 18px; background:#f9fafb; padding:1rem 1.5rem; border-top:1px solid #e5e7eb;">
-            <div class="flex justify-end space-x-3">
-                <x-button
-                    onclick="submitApproveRequestForm(event)"
-                    variant="primary"
-                    icon="fas fa-check">
-                    Approve Request
-                </x-button>
+            <div class="mb-4">
+                <label for="student_email" class="form-label">Student Email</label>
+                <input id="student_email" type="email" name="student_email" class="form-input" required readonly>
             </div>
-        </div>
+            <div class="mb-4">
+                <label for="student_department" class="form-label">Department</label>
+                <input id="student_department" type="text" name="student_department" class="form-input" required readonly>
+            </div>
+            <div class="mb-4">
+                <label for="student_id_number" class="form-label">ID Number</label>
+                <input id="student_id_number" type="text" name="student_id_number" class="form-input" required readonly>
+            </div>
+            <div class="mb-4">
+                <label for="student_role" class="form-label">Role</label>
+                <input id="student_role" type="text" name="student_role" class="form-input" required readonly>
+            </div>
+            <div class="mb-4">
+                <label for="approval_notes" class="form-label">Approval Notes</label>
+                <textarea id="approval_notes" name="approval_notes" class="form-textarea" placeholder="Enter any notes for the student (optional)"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="closeModal('approveModal')" class="btn btn-gray">Cancel</button>
+                <x-button onclick="submitApproveRequestForm(event)" variant="primary" icon="fas fa-check">Approve Request</x-button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Reject Modal -->
-<div id="rejectModal" class="modal hidden">
-    <div class="modal-content p-0" style="border-radius:18px;">
-        <!-- Modal Header -->
-        <div class="modal-header" style="border-radius:18px 18px 0 0; padding:1.5rem; background:#9B2235; color:white;">
-            <div class="flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Reject Registration Request</h3>
-                <x-button
-                    onclick="closeModal('rejectModal')"
-                    variant="secondary"
-                    size="sm"
-                    icon="fas fa-times">
-                </x-button>
+<div id="rejectModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-red-900">
+            <h3 class="text-lg font-semibold text-white">Reject User Request</h3>
+            <button onclick="closeModal('rejectModal')" class="text-white hover:text-gray-200 bg-red-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="rejectRequestForm" method="POST" class="px-6 pt-6 pb-2">
+            @csrf
+            <input type="hidden" name="request_id" id="reject_request_id">
+            <div class="mb-4">
+                <label for="reject_reason" class="form-label">Reason for Rejection</label>
+                <textarea id="reject_reason" name="reject_reason" class="form-textarea" required></textarea>
             </div>
-        </div>
-        <!-- Modal Body -->
-        <div class="modal-body p-0" style="padding:0;">
-            <form id="rejectRequestForm" method="POST" style="padding:1.5rem;">
-                @csrf
-                <input type="hidden" name="request_id" id="reject_request_id">
-                <div class="mb-4">
-                    <label for="reject_reason" class="form-label">Reason for Rejection</label>
-                    <textarea id="reject_reason" name="reject_reason" class="form-textarea" placeholder="Enter reason for rejection" required></textarea>
-                </div>
-            </form>
-        </div>
-        <!-- Modal Footer -->
-        <div class="modal-footer" style="border-radius:0 0 18px 18px; background:#f9fafb; padding:1rem 1.5rem; border-top:1px solid #e5e7eb;">
-            <div class="flex justify-end space-x-3">
-                <x-button
-                    onclick="submitRejectRequestForm(event)"
-                    variant="danger"
-                    icon="fas fa-times">
-                    Reject Request
-                </x-button>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" onclick="closeModal('rejectModal')" class="btn btn-gray">Cancel</button>
+                <x-button onclick="submitRejectRequestForm(event)" variant="danger" icon="fas fa-times">Reject Request</x-button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
@@ -562,11 +531,14 @@ function insertUserRow(user, showUrl, currentUserId) {
     const noUsersRow = tbody.querySelector('tr td[colspan]');
     if (noUsersRow) noUsersRow.parentElement.remove();
 
+    // Use roles array for new users, fallback to role string for old users
+    let roles = user.roles && user.roles.length ? user.roles : (user.role ? [user.role] : []);
+    let role = roles.length ? roles[0] : '';
     let colorClass = 'bg-gray-100 text-gray-800';
-    let roleDisplay = user.role === 'admin' ? 'Administrator' : user.role.charAt(0).toUpperCase() + user.role.slice(1);
-    if (user.role === 'admin') colorClass = 'bg-red-100 text-red-800';
-    else if (user.role === 'adviser') colorClass = 'bg-blue-100 text-blue-800';
-    else if (user.role === 'student') colorClass = 'bg-green-100 text-green-800';
+    let roleDisplay = role === 'admin' ? 'Administrator' : (role ? role.charAt(0).toUpperCase() + role.slice(1) : '');
+    if (role === 'admin') colorClass = 'bg-red-100 text-red-800';
+    else if (role === 'adviser') colorClass = 'bg-blue-100 text-blue-800';
+    else if (role === 'student') colorClass = 'bg-green-100 text-green-800';
 
     let initials = '';
     if (user.first_name && user.last_name) {
@@ -634,7 +606,6 @@ function validateForm(form) {
         'last_name',
         'id_number',
         'email',
-        'role',
         'department_id',
         'password',
         'password_confirmation'
@@ -655,6 +626,20 @@ function validateForm(form) {
             }
         }
     });
+    // Roles[] checkboxes validation
+    const roles = form.querySelectorAll('input[name="roles[]"]:checked');
+    const rolesError = document.getElementById('roles_error');
+    if (!roles.length) {
+        isValid = false;
+        if (rolesError) {
+            rolesError.textContent = 'At least one role must be selected.';
+            rolesError.classList.remove('hidden');
+            rolesError.classList.add('mt-1', 'text-sm', 'text-red-600');
+        }
+    } else if (rolesError) {
+        rolesError.textContent = '';
+        rolesError.classList.add('hidden');
+    }
     // Email format validation
     const email = form.querySelector('[name="email"]');
     if (email && email.value && !/^\S+@\S+\.\S+$/.test(email.value)) {
@@ -740,7 +725,7 @@ function setupRealTimeValidation() {
     if (!form) return;
 
     // Add event listeners for all required fields
-    const requiredFields = ['first_name', 'last_name', 'id_number', 'email', 'role', 'department_id', 'password', 'password_confirmation'];
+    const requiredFields = ['first_name', 'last_name', 'id_number', 'email', 'department_id', 'password', 'password_confirmation'];
 
     requiredFields.forEach(fieldName => {
         const field = form.querySelector(`[name="${fieldName}"]`);
@@ -749,6 +734,22 @@ function setupRealTimeValidation() {
             field.addEventListener('change', () => validateField(fieldName));
             field.addEventListener('blur', () => validateField(fieldName));
         }
+    });
+    // Real-time validation for roles[] checkboxes
+    const roleCheckboxes = form.querySelectorAll('input[name="roles[]"]');
+    roleCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const checked = form.querySelectorAll('input[name="roles[]"]:checked').length;
+            const rolesError = document.getElementById('roles_error');
+            if (!checked) {
+                rolesError.textContent = 'At least one role must be selected.';
+                rolesError.classList.remove('hidden');
+                rolesError.classList.add('mt-1', 'text-sm', 'text-red-600');
+            } else {
+                rolesError.textContent = '';
+                rolesError.classList.add('hidden');
+            }
+        });
     });
 }
 

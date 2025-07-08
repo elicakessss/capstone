@@ -13,14 +13,12 @@ class DepartmentsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:departments,code',
-            'description' => 'nullable|string',
             'color' => 'nullable|string|max:10',
         ]);
 
         $department = Department::create([
             'name' => $validated['name'],
             'code' => $validated['code'],
-            'description' => $validated['description'] ?? null,
             'color' => $validated['color'] ?? null,
             'is_active' => true,
         ]);
@@ -33,12 +31,12 @@ class DepartmentsController extends Controller
 
     public function show(Department $department)
     {
-        return view('admin.departments.show', compact('department'));
+        return view('admin.orgs.departments.show', compact('department'));
     }
 
     public function edit(Department $department)
     {
-        return view('admin.departments.edit', compact('department'));
+        return view('admin.orgs.departments.edit', compact('department'));
     }
 
     public function update(Request $request, Department $department)
@@ -46,10 +44,13 @@ class DepartmentsController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:departments,code,' . $department->id,
-            'description' => 'nullable|string',
             'color' => 'nullable|string|max:10',
         ]);
-        $department->update($validated);
+        $department->update([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+            'color' => $validated['color'] ?? null,
+        ]);
         return redirect()->route('admin.departments.show', $department)->with('success', 'Department updated successfully.');
     }
 

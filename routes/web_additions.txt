@@ -1,0 +1,10 @@
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrgTermController;
+
+// ...existing code...
+
+// Add these inside the 'auth' middleware group, after org_terms.show:
+Route::post('org_terms/{orgTerm}/assign-student', [OrgTermController::class, 'assignStudent'])
+    ->name('org_terms.assignStudent');
+
+// ...existing code...

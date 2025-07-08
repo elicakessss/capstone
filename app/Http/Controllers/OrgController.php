@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Org;
 use App\Models\User;
 use App\Models\Department;
+use App\Models\OrgType;
 use Illuminate\Http\Request;
 
 class OrgController extends Controller
@@ -36,19 +37,45 @@ class OrgController extends Controller
     // Adviser: List assigned templates
     public function indexAssignedTemplates()
     {
-        // ...
+        $user = auth()->user();
+        $assignedTemplates = $user->advisedOrgs()->whereNull('template_id')->with('department')->get();
+        return view('adviser.orgs.assigned-templates.index', compact('assignedTemplates'));
     }
 
     // Adviser: Create org instance from template
     public function createInstance($templateId)
     {
-        // ...
+        $template = Org::with('positions')->findOrFail($templateId);
+        return view('adviser.orgs.instances.create', compact('template'));
     }
 
     // Adviser: Store org instance
     public function storeInstance(Request $request, $templateId)
     {
-        // ...
+        $request->validate([
+            'academic_year' => 'required|string|max:20',
+        ]);
+        $template = Org::with('positions')->findOrFail($templateId);
+        $user = auth()->user();
+        // Create new org instance
+        $instance = Org::create([
+            'name' => $template->name,
+            'type' => $template->type,
+            'description' => $template->description,
+            'department_id' => $template->department_id,
+            'template_id' => $template->id,
+            'adviser_id' => $user->id,
+            'term' => $request->academic_year,
+            'is_active' => true,
+            'created_by' => $template->created_by,
+        ]);
+        // Copy positions from template
+        foreach ($template->positions as $position) {
+            $instance->positions()->create([
+                'title' => $position->title,
+            ]);
+        }
+        return redirect()->route('adviser.organizations')->with('success', 'Organization instance created for academic year ' . $request->academic_year);
     }
 
     // Show the organizations index for admin
@@ -56,7 +83,8 @@ class OrgController extends Controller
     {
         $orgs = \App\Models\Org::all();
         $departments = Department::where('is_active', true)->orderBy('name')->get();
-        return view('admin.orgs.index', compact('orgs', 'departments'));
+        $orgTypes = OrgType::orderBy('name')->get();
+        return view('admin.orgs.index', compact('orgs', 'departments', 'orgTypes'));
     }
 
     // Store a new organization (admin)
@@ -113,5 +141,29 @@ class OrgController extends Controller
     {
         $org->delete();
         return redirect()->route('admin.orgs.index')->with('success', 'Organization deleted successfully.');
+    }
+
+    // Adviser: List created org instances and available templates
+    public function indexInstances()
+    {
+        $user = auth()->user();
+        // All orgs this adviser has instantiated (instances, not templates)
+        $orgInstances = Org::where('adviser_id', $user->id)->whereNotNull('template_id')->with('department')->get();
+        // All templates this adviser can use (assigned, not yet instantiated for any year)
+        $assignedTemplates = $user->advisedOrgs()->whereNull('template_id')->get();
+        // Only show templates not already instantiated for any year by this adviser
+        $usedTemplateIds = $orgInstances->pluck('template_id')->unique();
+        $availableTemplates = $assignedTemplates->whereNotIn('id', $usedTemplateIds);
+        return view('adviser.orgs.instances.index', compact('orgInstances', 'availableTemplates'));
+    }
+
+    // Adviser: Assign student to position (enforce one position per org)
+    public function assignStudentToPosition(Request $request, $orgId, $positionId)
+    {
+        $org = Org::findOrFail($orgId);
+        $position = $org->positions()->findOrFail($positionId);
+        // Attach the student to the position (many-to-many)
+        $position->users()->attach($studentId);
+        return response()->json(['success' => true]);
     }
 }

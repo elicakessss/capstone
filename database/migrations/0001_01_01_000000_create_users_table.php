@@ -20,11 +20,13 @@ return new class extends Migration
             $table->string('email', 191)->unique(); // Limited to 191 chars for MySQL compatibility
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['student', 'adviser', 'admin'])->default('student');
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_adviser')->default(false);
             $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null');
             $table->string('profile_picture')->nullable(); // Path to profile picture
             $table->text('bio')->nullable(); // Description/bio
             $table->boolean('is_active')->default(true);
+            $table->json('roles')->nullable(); // JSON array of roles (multi-role support)
             $table->rememberToken();
             $table->timestamps();
         });

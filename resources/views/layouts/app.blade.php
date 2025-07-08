@@ -840,7 +840,7 @@
                             </div>
                             <span>Portfolio</span>
                         </a>
-                        <a href="{{ route('councils.index') }}" class="sidebar-item group flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('councils.*') ? 'bg-white shadow-md active' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
+                        <a href="{{ route('orgs.index') }}" class="sidebar-item group flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 {{ request()->routeIs('orgs.*') ? 'bg-white shadow-md active' : 'hover:bg-white hover:shadow-lg' }}" style="color: #00471B;">
                             <div class="w-8 h-8 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
                                 <i class="fas fa-users text-lg"></i>
                             </div>
@@ -854,7 +854,7 @@
                         </a>
                     </div>
 
-                    @if(auth()->check() && auth()->user()->role === 'admin')
+                    @if(auth()->check() && auth()->user()->is_admin)
                         <!-- Admin Section -->
                         <div class="pt-6">
                             <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Admin Settings</h3>
@@ -885,96 +885,6 @@
                                 </a>
                             </div>
                         </div>
-                    @elseif(auth()->check() && auth()->user()->role === 'adviser')
-                        <!-- Adviser Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Portfolio</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('portfolio.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('portfolio.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-folder-open text-lg"></i>
-                                    </div>
-                                    <span>My Portfolio</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Councils Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Councils</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('councils.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('councils.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-users text-lg"></i>
-                                    </div>
-                                    <span>My Councils</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Evaluation Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('evaluations.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('evaluations.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-clipboard-check text-lg"></i>
-                                    </div>
-                                    <span>My Evaluations</span>
-                                </a>
-                                <a href="#" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-chart-line text-lg"></i>
-                                    </div>
-                                    <span>Evaluation Reports</span>
-                                </a>
-                            </div>
-                        </div>
-                    @else
-                        <!-- Student Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Portfolio</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('portfolio.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('portfolio.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-folder-open text-lg"></i>
-                                    </div>
-                                    <span>My Portfolio</span>
-                                </a>
-                                <a href="{{ route('portfolio.documents') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('portfolio.documents') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-upload text-lg"></i>
-                                    </div>
-                                    <span>Upload Documents</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Organization Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Councils</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('councils.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('councils.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-users text-lg"></i>
-                                    </div>
-                                    <span>My Councils</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Evaluation Section -->
-                        <div class="pt-6">
-                            <h3 class="px-4 text-xs font-bold uppercase tracking-wider mb-3" style="color: #00471B;">Evaluation</h3>
-                            <div class="space-y-1">
-                                <a href="{{ route('evaluations.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('evaluations.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
-                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
-                                        <i class="fas fa-star text-lg"></i>
-                                    </div>
-                                    <span>My Evaluations</span>
-                                </a>
-                            </div>
-                        </div>
                     @endif
                 </nav>
             </div>
@@ -991,7 +901,7 @@
         <!-- Mobile Bottom Navigation (Mobile Only) -->
         <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
             <div class="flex justify-around items-center h-16">
-                @if(auth()->check() && auth()->user()->role === 'admin')
+                @if(auth()->check() && auth()->user()->is_admin)
                     <!-- Admin Mobile Nav -->
                     <a href="{{ route('dashboard') ?? '#' }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-home text-xl mb-1"></i>
@@ -1005,36 +915,16 @@
                     <a href="{{ route('admin.users.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-user-shield text-xl mb-1"></i>
                     </a>
-                @elseif(auth()->check() && auth()->user()->role === 'adviser')
-                    <!-- Adviser Mobile Nav -->
-                    <a href="{{ route('dashboard') ?? '#' }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-home text-xl mb-1"></i>
-                    </a>
-                    <a href="{{ route('portfolio.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('portfolio.*') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-folder-open text-xl mb-1"></i>
-                    </a>
-                    <a href="{{ route('councils.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('councils.*') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-users text-xl mb-1"></i>
-                    </a>
-                    <a href="{{ route('evaluations.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('evaluations.*') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-clipboard-check text-xl mb-1"></i>
-                    </a>
                 @else
-                    <!-- Student Mobile Nav -->
+                    <!-- User Mobile Nav (common for all roles) -->
                     <a href="{{ route('dashboard') ?? '#' }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-home text-xl mb-1"></i>
                     </a>
                     <a href="{{ route('portfolio.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('portfolio.index') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-folder-open text-xl mb-1"></i>
                     </a>
-                    <a href="{{ route('portfolio.documents') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('portfolio.documents') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-upload text-xl mb-1"></i>
-                    </a>
-                    <a href="{{ route('councils.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('councils.*') ? 'active' : '' }}" style="color: #00471B;">
+                    <a href="{{ route('orgs.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('orgs.*') ? 'active' : '' }}" style="color: #00471B;">
                         <i class="fas fa-users text-xl mb-1"></i>
-                    </a>
-                    <a href="{{ route('evaluations.index') }}" class="mobile-nav-item flex-1 flex flex-col items-center justify-center py-2 {{ request()->routeIs('evaluations.*') ? 'active' : '' }}" style="color: #00471B;">
-                        <i class="fas fa-star text-xl mb-1"></i>
                     </a>
                 @endif
             </div>
@@ -1042,5 +932,21 @@
     </div>
 
     @stack('scripts')
+
+    <!-- Toast Notification Integration -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                showToast(@json(session('success')), 'success');
+            @endif
+            @if(session('error'))
+                showToast(@json(session('error')), 'error');
+            @endif
+            @if ($errors && $errors->any())
+                let errorMsg = @json($errors->first());
+                showToast(errorMsg, 'error');
+            @endif
+        });
+    </script>
 </body>
 </html>

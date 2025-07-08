@@ -11,11 +11,11 @@
                 <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ Auth::user()->name ?? 'User' }}!</h1>
                 <p class="text-gray-600 mt-1">
                     @if(auth()->check() && auth()->user()->role === 'admin')
-                        You're logged in as an Administrator. Manage users, councils, and system settings.
+                        You're logged in as an Administrator. Manage users, organization terms, and system settings.
                     @elseif(auth()->check() && auth()->user()->role === 'adviser')
                         You're logged in as an Adviser. Manage your organizations and evaluate students.
                     @else
-                        You're logged in as a Student. Manage your portfolio and participate in councils.
+                        You're logged in as a Student. Manage your portfolio and participate in organization terms.
                     @endif
                 </p>
             </div>
@@ -46,7 +46,7 @@
                         <i class="fas fa-users text-lg"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Active Councils</p>
+                        <p class="text-sm font-medium text-gray-600">Active Organization Terms</p>
                         <p class="text-2xl font-semibold text-gray-900">25</p>
                     </div>
                 </div>
@@ -89,7 +89,7 @@
                     </a>
                     <a href="#" class="flex items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors border border-yellow-200">
                         <i class="fas fa-users text-yellow-600 mr-2"></i>
-                        <span class="font-medium text-yellow-900">Create Council Template</span>
+                        <span class="font-medium text-yellow-900">Create Organization Term Template</span>
                     </a>
                     <a href="#" class="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200">
                         <i class="fas fa-clipboard-list text-gray-600 mr-2"></i>
@@ -141,7 +141,7 @@
                         <i class="fas fa-users text-lg"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Councils Participated</p>
+                        <p class="text-sm font-medium text-gray-600">Organizations Participated</p>
                         <p class="text-2xl font-semibold text-gray-900">3</p>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <a href="#" class="flex items-center justify-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors border border-yellow-200">
                         <i class="fas fa-plus text-yellow-600 mr-2"></i>
-                        <span class="font-medium text-yellow-900">Create New Council</span>
+                        <span class="font-medium text-yellow-900">Create New Organization Term</span>
                     </a>
                     <a href="#" class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200">
                         <i class="fas fa-clipboard-check text-blue-600 mr-2"></i>
@@ -188,7 +188,7 @@
                         <i class="fas fa-users text-lg"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Council Memberships</p>
+                        <p class="text-sm font-medium text-gray-600">Organization Term Memberships</p>
                         <p class="text-2xl font-semibold text-gray-900">2</p>
                     </div>
                 </div>
@@ -269,7 +269,7 @@
                         <i class="fas fa-users text-sm"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900">Joined Student Council</p>
+                        <p class="text-sm font-medium text-gray-900">Joined Organization Term</p>
                         <p class="text-xs text-gray-500">3 days ago</p>
                     </div>
                 </div>

@@ -17,7 +17,6 @@ class Department extends Model
     protected $fillable = [
         'name',
         'code',
-        'description',
         'is_active',
         'color',
     ];
@@ -40,5 +39,13 @@ class Department extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get the organization types that belong to this department.
+     */
+    public function orgTypes()
+    {
+        return $this->hasMany(OrgType::class, 'department_id');
     }
 }

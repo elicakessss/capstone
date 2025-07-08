@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\PositionsController;
 
 // Redirect root to dashboard or login
 Route::get('/', function () {
@@ -19,12 +20,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/documents', fn() => view('portfolio.documents'))->name('documents');
     });
 
-    // Councils (all roles)
-    Route::prefix('councils')->name('councils.')->group(function () {
-        Route::get('/', fn() => view('councils.index'))->name('index');
-        Route::get('/create', fn() => view('councils.create'))->name('create')->middleware('role:admin,adviser');
-        Route::get('/{id}/edit', fn($id) => view('councils.edit', compact('id')))->name('edit')->middleware('role:admin,adviser');
+    // AJAX: Check for duplicate org+year (must be outside closure-based prefix group)
+    Route::get('/orgs/check-duplicate', [App\Http\Controllers\OrgTermController::class, 'checkDuplicate'])->name('orgs.check-duplicate');
+
+    // Orgs (all roles)
+    Route::prefix('orgs')->name('orgs.')->group(function () {
+        Route::get('/', fn() => view('orgs.index'))->name('index');
+        // If you have orgs.create or orgs.edit views, update here as well
+        // Route::get('/create', fn() => view('orgs.create'))->name('create')->middleware('role:admin,adviser');
+        // Route::get('/{id}/edit', fn($id) => view('orgs.edit', compact('id')))->name('edit')->middleware('role:admin,adviser');
     });
+
+    // Orgs
+    Route::resource('orgs', App\Http\Controllers\OrgTermController::class)->only(['index', 'store']);
+    Route::get('orgs/{org}', [App\Http\Controllers\OrgTermController::class, 'show'])->name('orgs.show');
 
     // Evaluations (all roles)
     Route::prefix('evaluations')->name('evaluations.')->group(function () {
@@ -34,20 +43,23 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Student
-    Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
+    Route::prefix('student')->name('student.')->middleware('is_admin')->group(function () {
         Route::get('/memberships', fn() => view('student.memberships'))->name('memberships');
     });
 
     // Adviser
-    Route::prefix('adviser')->name('adviser.')->middleware('role:adviser,admin')->group(function () {
+    Route::prefix('adviser')->name('adviser.')->middleware('is_admin')->group(function () {
         Route::get('/organizations', fn() => view('adviser.organizations'))->name('organizations');
         Route::get('/evaluations', fn() => view('adviser.evaluations'))->name('evaluations');
+
+        // Assign student to position (AJAX)
+        Route::post('/orgs/{org}/positions/{position}/assign-student', [App\Http\Controllers\OrgController::class, 'assignStudentToPosition'])->name('orgs.positions.assignStudent');
     });
 
     // Admin
-    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('is_admin')->group(function () {
         Route::get('/departments', fn() => view('admin.departments'))->name('departments');
-        Route::get('/councils', fn() => view('admin.councils'))->name('councils');
+        // Route::get('/orgs', fn() => view('admin.orgs'))->name('orgs');
 
 
         // User management
@@ -99,7 +111,25 @@ Route::middleware(['auth'])->group(function () {
         // System logs
         Route::get('/logs', fn() => view('admin.logs.index'))->name('logs');
 
+        // Org Type management
+        Route::post('/org_types', [App\Http\Controllers\Admin\OrgTypeController::class, 'store'])->name('org_types.store');
+        Route::get('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'show'])->name('org_types.show');
+        Route::get('/org_types/{type}/edit', [App\Http\Controllers\Admin\OrgTypeController::class, 'edit'])->name('org_types.edit');
+        Route::put('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'update'])->name('org_types.update');
+        Route::delete('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'destroy'])->name('org_types.destroy');
+
+        // Position management for org (admin)
+        Route::resource('positions', PositionsController::class)->only(['edit', 'update', 'destroy']);
     });
+
+    // Add route for org_terms.show so org term cards work
+    Route::get('org_terms/{orgTerm}', [App\Http\Controllers\OrgTermController::class, 'show'])->name('org_terms.show');
+    // Add route for assigning student to position in org term
+    Route::post('org_terms/{orgTerm}/assign-student', [App\Http\Controllers\OrgTermController::class, 'assignStudent'])->name('org_terms.assignStudent');
+    // Add route for AJAX student search in org term
+    Route::get('org_terms/{orgTerm}/search-students', [App\Http\Controllers\OrgTermController::class, 'searchStudents'])->name('org_terms.searchStudents');
+    // Remove student from position in org term
+    Route::delete('org_terms/{orgTerm}/positions/{position}/remove-student/{user}', [App\Http\Controllers\OrgTermController::class, 'removeStudent'])->name('org_terms.removeStudent');
 });
 
 // Guest routes

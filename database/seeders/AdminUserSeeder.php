@@ -24,9 +24,9 @@ class AdminUserSeeder extends Seeder
                 'email' => 'admin@spup.edu.ph',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'role' => 'admin',
                 'department_id' => 1, // CCS
                 'is_active' => true,
+                'is_admin' => true,
             ]
         );
     }

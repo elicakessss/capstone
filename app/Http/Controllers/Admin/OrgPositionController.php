@@ -12,12 +12,16 @@ class OrgPositionController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'slots' => 'required|integer|min:1',
+            'order' => 'required|integer|min:1|unique:positions,order',
             'departments' => 'required|array',
             'departments.*' => 'exists:departments,id',
         ]);
 
         $position = $org->positions()->create([
             'title' => $validated['title'],
+            'slots' => $validated['slots'],
+            'order' => $validated['order'],
         ]);
         $position->departments()->sync($validated['departments']);
 

@@ -59,9 +59,6 @@ Route::middleware(['auth'])->group(function () {
     // Admin
     Route::prefix('admin')->name('admin.')->middleware('is_admin')->group(function () {
         Route::get('/departments', fn() => view('admin.departments'))->name('departments');
-        // Route::get('/orgs', fn() => view('admin.orgs'))->name('orgs');
-
-
         // User management
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\UsersController::class, 'index'])->name('index');
@@ -76,7 +73,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{userRequest}/approve', [App\Http\Controllers\UserRequestController::class, 'approve'])->name('approve');
             Route::post('/{userRequest}/reject', [App\Http\Controllers\UserRequestController::class, 'reject'])->name('reject');
         });
-
         // Organization management
         Route::prefix('orgs')->name('orgs.')->group(function () {
             Route::get('/', [App\Http\Controllers\OrgController::class, 'index'])->name('index');
@@ -85,41 +81,38 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{org}/edit', [App\Http\Controllers\OrgController::class, 'edit'])->name('edit');
             Route::put('/{org}', [App\Http\Controllers\OrgController::class, 'update'])->name('update');
             Route::delete('/{org}', [App\Http\Controllers\OrgController::class, 'destroy'])->name('destroy');
-
-            // Position management for org
             Route::post('/{org}/positions', [App\Http\Controllers\Admin\OrgPositionController::class, 'store'])->name('positions.store');
-
-            // Adviser assignment and search
             Route::post('/{org}/assign-adviser', [App\Http\Controllers\Admin\OrgAdviserController::class, 'assign'])->name('assignAdviser');
             Route::get('/{org}/search-advisers', [App\Http\Controllers\Admin\OrgAdviserController::class, 'search'])->name('searchAdvisers');
+            Route::post('/{org}/remove-adviser', [App\Http\Controllers\Admin\OrgAdviserController::class, 'remove'])->name('removeAdviser');
         });
-
         // Department management
         Route::post('/departments', [App\Http\Controllers\Admin\DepartmentsController::class, 'store'])->name('departments.store');
         Route::get('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'show'])->name('departments.show');
         Route::get('/departments/{department}/edit', [App\Http\Controllers\Admin\DepartmentsController::class, 'edit'])->name('departments.edit');
         Route::put('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'update'])->name('departments.update');
         Route::delete('/departments/{department}', [App\Http\Controllers\Admin\DepartmentsController::class, 'destroy'])->name('departments.destroy');
-
-        // Form management
-        Route::prefix('forms')->name('forms.')->group(function () {
-            Route::get('/', fn() => view('admin.forms.index'))->name('index');
-            Route::get('/create', fn() => view('admin.forms.create'))->name('create');
-            Route::get('/{id}/edit', fn($id) => view('admin.forms.edit', compact('id')))->name('edit');
-        });
-
         // System logs
         Route::get('/logs', fn() => view('admin.logs.index'))->name('logs');
-
         // Org Type management
         Route::post('/org_types', [App\Http\Controllers\Admin\OrgTypeController::class, 'store'])->name('org_types.store');
         Route::get('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'show'])->name('org_types.show');
         Route::get('/org_types/{type}/edit', [App\Http\Controllers\Admin\OrgTypeController::class, 'edit'])->name('org_types.edit');
         Route::put('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'update'])->name('org_types.update');
         Route::delete('/org_types/{type}', [App\Http\Controllers\Admin\OrgTypeController::class, 'destroy'])->name('org_types.destroy');
-
         // Position management for org (admin)
         Route::resource('positions', PositionsController::class)->only(['edit', 'update', 'destroy']);
+        // Admin Evaluation Forms (only index, show, store, destroy)
+        Route::get('/forms', [App\Http\Controllers\Admin\EvaluationFormController::class, 'index'])->name('forms.index');
+        Route::get('/forms/{form}', [App\Http\Controllers\Admin\EvaluationFormController::class, 'show'])->name('forms.show');
+        Route::post('/forms', [App\Http\Controllers\Admin\EvaluationFormController::class, 'store'])->name('forms.store');
+        Route::delete('/forms/{form}', [App\Http\Controllers\Admin\EvaluationFormController::class, 'destroy'])->name('forms.destroy');
+        // Admin Evaluation Form Domains
+        Route::post('/forms/{form}/domains', [App\Http\Controllers\Admin\EvaluationDomainController::class, 'store'])->name('forms.domains.store');
+        // Admin Evaluation Form Strands
+        Route::post('/forms/{form}/domains/{domain}/strands', [App\Http\Controllers\Admin\EvaluationStrandController::class, 'store'])->name('forms.domains.strands.store');
+        // Admin Evaluation Form Questions
+        Route::post('/forms/{form}/domains/{domain}/strands/{strand}/questions', [App\Http\Controllers\Admin\EvaluationQuestionController::class, 'store'])->name('forms.domains.strands.questions.store');
     });
 
     // Add route for org_terms.show so org term cards work

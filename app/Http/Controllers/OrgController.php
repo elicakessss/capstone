@@ -93,15 +93,24 @@ class OrgController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|max:255',
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => 'nullable|exists:departments,id',
             'description' => 'nullable|string',
+            'logo' => 'nullable|image|max:2048', // Add logo validation
         ]);
 
         $org = new Org();
         $org->name = $validated['name'];
         $org->type = $validated['type'];
-        $org->department_id = $validated['department_id'];
+        $org->department_id = $validated['department_id'] ?? null;
         $org->description = $validated['description'] ?? null;
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            $logoPath = $logo->store('org_logos', 'public');
+            $org->logo = $logoPath;
+        }
+
         $org->save();
 
         return redirect()->route('admin.orgs.index')->with('success', 'Organization created successfully.');
@@ -113,7 +122,8 @@ class OrgController extends Controller
         $departments = \App\Models\Department::where('is_active', true)->orderBy('name')->get();
         $positions = $org->positions()->with('departments')->get();
         $advisers = $org->advisers()->get();
-        return view('admin.orgs.show', compact('org', 'departments', 'positions', 'advisers'));
+        $orgTypes = \App\Models\OrgType::orderBy('name')->get();
+        return view('admin.orgs.show', compact('org', 'departments', 'positions', 'advisers', 'orgTypes'));
     }
 
     // Edit an organization (admin)
@@ -131,8 +141,26 @@ class OrgController extends Controller
             'type' => 'required|string|max:255',
             'department_id' => 'required|exists:departments,id',
             'description' => 'nullable|string',
+            'logo' => 'nullable|image|max:2048', // Add logo validation
         ]);
-        $org->update($validated);
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            $logoPath = $logo->store('org_logos', 'public');
+            // Delete old logo if exists
+            if ($org->logo && \Storage::disk('public')->exists($org->logo)) {
+                \Storage::disk('public')->delete($org->logo);
+            }
+            $org->logo = $logoPath;
+        }
+
+        $org->name = $validated['name'];
+        $org->type = $validated['type'];
+        $org->department_id = $validated['department_id'];
+        $org->description = $validated['description'] ?? null;
+        $org->save();
+
         return redirect()->route('admin.orgs.show', $org)->with('success', 'Organization updated successfully.');
     }
 
@@ -162,7 +190,16 @@ class OrgController extends Controller
     {
         $org = Org::findOrFail($orgId);
         $position = $org->positions()->findOrFail($positionId);
-        // Attach the student to the position (many-to-many)
+        $studentId = $request->input('student_id');
+        $student = \App\Models\User::findOrFail($studentId);
+
+        // Enforce department logic
+        if ($org->department_id) {
+            if ($student->department_id != $org->department_id) {
+                return response()->json(['success' => false, 'message' => 'Student does not belong to the required department.'], 403);
+            }
+        }
+        // If org->department_id is null, allow any student
         $position->users()->attach($studentId);
         return response()->json(['success' => true]);
     }

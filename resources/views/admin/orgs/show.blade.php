@@ -18,8 +18,8 @@
         <!-- Org Details Card -->
         <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between" style="border-left: 5px solid {{ $org->department->color ?? '#e5e7eb' }};">
             <div class="flex items-center gap-4 mb-4">
-                @if($org->logo)
-                    <img src="{{ asset($org->logo) }}" alt="{{ $org->name }} Logo" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm">
+                @if($org->logo && file_exists(public_path('storage/' . $org->logo)))
+                    <img src="{{ asset('storage/' . $org->logo) }}" alt="{{ $org->name }} Logo" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm">
                 @else
                     <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-xl font-bold border border-gray-200 shadow-sm">
                         <i class="fas fa-users"></i>
@@ -32,10 +32,6 @@
                         <div class="text-gray-500 text-sm mt-1">Department: {{ $org->department->name }}</div>
                     @endif
                 </div>
-            </div>
-            <div class="mb-2">
-                <label class="block text-gray-700 font-medium mb-1">Description</label>
-                <div class="text-gray-800">{{ $org->description ?? '—' }}</div>
             </div>
             @if($org->term)
                 <span class="org-term text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ $org->term }}</span>
@@ -53,18 +49,33 @@
         <!-- Advisers Card -->
         <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-900">Advisers who can use this</h2>
+                <h2 class="text-xl font-bold text-gray-900">Adviser</h2>
                 <button id="assignAdviserBtn" class="btn btn-green" type="button"><i class="fas fa-plus"></i> Assign Adviser</button>
             </div>
-            <div class="text-gray-500 text-sm mb-2">@if(isset($advisers) && $advisers->count())
-                <ul>
-                    @foreach($advisers as $adviser)
-                        <li class="mb-1">{{ $adviser->name }} ({{ $adviser->email }})</li>
-                    @endforeach
-                </ul>
-            @else
-                No advisers assigned yet.
-            @endif</div>
+            <div class="border-b border-gray-200 mb-2"></div>
+            <div class="text-gray-500 text-sm">
+                @if(isset($advisers) && $advisers->count())
+                    <ul class="divide-y divide-gray-100">
+                        @foreach($advisers as $adviser)
+                            <li class="py-2 px-1 flex items-center justify-between group">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-gray-800">{{ $adviser->name }}</span>
+                                    <span class="text-xs text-gray-500">({{ $adviser->email }})</span>
+                                </div>
+                                <form method="POST" action="{{ route('admin.orgs.removeAdviser', $org) }}" onsubmit="return confirm('Remove this adviser?');">
+                                    @csrf
+                                    <input type="hidden" name="adviser_id" value="{{ $adviser->id }}">
+                                    <button type="submit" class="text-gray-400 hover:text-red-600 transition p-1" title="Remove Adviser">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="text-gray-400 py-2 px-1">No advisers assigned yet.</div>
+                @endif
+            </div>
         </div>
     </div>
     <div class="grid grid-cols-1">
@@ -125,12 +136,22 @@
             <div class="mb-4">
                 <label class="form-label text-base">Allowed Departments</label>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
-                    @foreach($departments as $department)
-                        <div class="flex items-center">
-                            <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="dept-{{ $department->id }}" class="mr-2">
-                            <label for="dept-{{ $department->id }}" class="text-gray-800">{{ $department->name }}</label>
-                        </div>
-                    @endforeach
+                    @if($org->department_id)
+                        @foreach($departments as $department)
+                            <div class="flex items-center">
+                                <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="dept-{{ $department->id }}" class="mr-2" {{ $department->id == $org->department_id ? 'checked disabled' : 'disabled' }}>
+                                <label for="dept-{{ $department->id }}" class="text-gray-800 {{ $department->id == $org->department_id ? '' : 'text-gray-400' }}">{{ $department->name }}</label>
+                            </div>
+                        @endforeach
+                        <input type="hidden" name="departments[]" value="{{ $org->department_id }}">
+                    @else
+                        @foreach($departments as $department)
+                            <div class="flex items-center">
+                                <input type="checkbox" name="departments[]" value="{{ $department->id }}" id="dept-{{ $department->id }}" class="mr-2">
+                                <label for="dept-{{ $department->id }}" class="text-gray-800">{{ $department->name }}</label>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
             <div class="mb-4 flex gap-4">
@@ -161,7 +182,10 @@
             @csrf
             <div class="mb-4">
                 <label class="form-label text-base">Search Adviser</label>
-                <input type="text" id="adviserSearchInput" class="form-input w-full text-base" placeholder="Type name or email...">
+                <div class="relative">
+                    <input type="text" id="adviserSearchInput" class="form-input w-full text-base pr-10" placeholder="Type name or email...">
+                    <span id="adviserSelectedIcon" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hidden"><i class="fas fa-check-circle"></i></span>
+                </div>
             </div>
             <div id="adviserSearchResults" class="mb-4 max-h-40 overflow-y-auto border rounded p-2 bg-gray-50"></div>
             <input type="hidden" name="adviser_id" id="selectedAdviserId">
@@ -181,9 +205,19 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <form method="POST" action="{{ route('admin.orgs.update', $org) }}" class="px-6 pt-6 pb-2">
+        <form method="POST" action="{{ route('admin.orgs.update', $org) }}" class="px-6 pt-6 pb-2" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+            <div class="mb-4 flex flex-col items-center">
+                <div id="editOrgLogoPreviewWrapper" class="mb-2" style="display:{{ ($org->logo && file_exists(public_path('storage/' . $org->logo))) ? 'block' : 'none' }};">
+                    <img id="editOrgLogoPreview" src="{{ ($org->logo && file_exists(public_path('storage/' . $org->logo))) ? asset('storage/' . $org->logo) : '#' }}" alt="Logo Preview" class="w-20 h-20 rounded-full object-cover border border-gray-200 shadow mb-2 mx-auto" style="max-width:80px; max-height:80px;" />
+                </div>
+                <label class="form-label text-base mb-1">Organization Logo</label>
+                <button type="button" onclick="document.getElementById('editOrgLogoInput').click();" class="btn btn-green flex items-center gap-2 mb-2">
+                    <i class="fas fa-upload"></i> <span>Choose Logo</span>
+                </button>
+                <input id="editOrgLogoInput" type="file" name="logo" accept="image/*" class="hidden" onchange="previewEditOrgLogo(event)">
+            </div>
             <div class="mb-4">
                 <label class="form-label text-base">Organization Name</label>
                 <input type="text" name="name" class="form-input w-full text-base" value="{{ old('name', $org->name) }}" required>
@@ -204,6 +238,7 @@
                     @foreach($departments ?? [] as $department)
                         <option value="{{ $department->id }}" {{ (old('department_id', $org->department_id) == $department->id) ? 'selected' : '' }}>{{ $department->name }}</option>
                     @endforeach
+                    <option value="" {{ is_null(old('department_id', $org->department_id)) ? 'selected' : '' }}>No Department</option>
                 </select>
             </div>
             <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
@@ -302,21 +337,31 @@ document.getElementById('closeModalBtn').addEventListener('click', function() {
 document.getElementById('cancelModalBtn').addEventListener('click', function() {
     document.getElementById('addPositionModal').classList.add('hidden');
 });
-document.getElementById('adviserSearchInput').addEventListener('input', function() {
+const adviserInput = document.getElementById('adviserSearchInput');
+const selectedIcon = document.getElementById('adviserSelectedIcon');
+adviserInput.addEventListener('input', function() {
     var query = this.value;
+    document.getElementById('selectedAdviserId').value = '';
+    document.getElementById('assignAdviserSubmitBtn').disabled = true;
+    selectedIcon.classList.add('hidden');
     if (query.length >= 2) {
         fetch(`/admin/orgs/${@json($org->id)}/search-advisers?q=` + encodeURIComponent(query))
             .then(response => response.json())
             .then(data => {
                 var resultsDiv = document.getElementById('adviserSearchResults');
                 resultsDiv.innerHTML = '';
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="text-gray-400 text-sm">No advisers found.</div>';
+                }
                 data.forEach(adviser => {
                     var div = document.createElement('div');
-                    div.className = 'py-2 px-3 rounded cursor-pointer hover:bg-gray-100';
-                    div.innerHTML = `${adviser.name} (${adviser.email})`;
+                    div.className = 'py-2 px-3 rounded cursor-pointer hover:bg-green-100 flex items-center gap-2';
+                    div.innerHTML = `<span class='font-medium text-gray-800'>${adviser.name}</span> <span class='text-xs text-gray-500'>(${adviser.email})</span>`;
                     div.addEventListener('click', function() {
                         document.getElementById('selectedAdviserId').value = adviser.id;
+                        adviserInput.value = adviser.name + ' (' + adviser.email + ')';
                         document.getElementById('assignAdviserSubmitBtn').disabled = false;
+                        selectedIcon.classList.remove('hidden');
                         resultsDiv.innerHTML = '';
                     });
                     resultsDiv.appendChild(div);
@@ -351,5 +396,21 @@ document.getElementById('closeEditPositionModalBtn').addEventListener('click', f
 document.getElementById('cancelEditPositionModalBtn').addEventListener('click', function() {
     document.getElementById('editPositionModal').classList.add('hidden');
 });
+function previewEditOrgLogo(event) {
+    const input = event.target;
+    const previewWrapper = document.getElementById('editOrgLogoPreviewWrapper');
+    const preview = document.getElementById('editOrgLogoPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewWrapper.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '#';
+        previewWrapper.style.display = 'none';
+    }
+}
 </script>
 @endsection

@@ -18,6 +18,13 @@ class OrgPositionController extends Controller
             'departments.*' => 'exists:departments,id',
         ]);
 
+        // Enforce: if org has department, only that department can be assigned
+        if ($org->department_id) {
+            if (count($validated['departments']) !== 1 || $validated['departments'][0] != $org->department_id) {
+                return back()->withErrors(['departments' => 'Only the organization\'s department can be assigned to this position.']);
+            }
+        }
+
         $position = $org->positions()->create([
             'title' => $validated['title'],
             'slots' => $validated['slots'],

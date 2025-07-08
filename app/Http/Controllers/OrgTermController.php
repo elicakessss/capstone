@@ -83,10 +83,16 @@ class OrgTermController extends Controller
             'student_id' => 'required|exists:users,id',
         ]);
 
-        $orgTerm = \App\Models\OrgTerm::with('org.positions')->findOrFail($orgTermId);
-        $position = $orgTerm->org->positions->where('id', $request->position_id)->first();
+        $orgTerm = \App\Models\OrgTerm::with('org.positions', 'org')->findOrFail($orgTermId);
+        $org = $orgTerm->org;
+        $position = $org->positions->where('id', $request->position_id)->first();
         if (!$position) {
             return back()->withErrors(['position_id' => 'Invalid position for this organization term.']);
+        }
+        $student = \App\Models\User::findOrFail($request->student_id);
+        // Department logic: if org has department, student must match; else allow all
+        if ($org->department_id && $student->department_id != $org->department_id) {
+            return back()->withErrors(['student_id' => 'Student does not belong to the required department.']);
         }
         // Attach student to position if not already assigned
         if (!$position->users->contains($request->student_id)) {

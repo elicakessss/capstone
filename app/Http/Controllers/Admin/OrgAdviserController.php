@@ -32,4 +32,14 @@ class OrgAdviserController extends Controller
         $org->advisers()->syncWithoutDetaching([$validated['adviser_id']]);
         return redirect()->back()->with('success', 'Adviser assigned successfully.');
     }
+
+    // Remove adviser from org
+    public function remove(Request $request, Org $org)
+    {
+        $validated = $request->validate([
+            'adviser_id' => 'required|exists:users,id',
+        ]);
+        $org->advisers()->detach($validated['adviser_id']);
+        return redirect()->back()->with('success', 'Adviser removed successfully.');
+    }
 }

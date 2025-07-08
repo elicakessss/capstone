@@ -23,7 +23,7 @@
             <button @click="sectionTab = 'orgTypes'"
                 :class="sectionTab === 'orgTypes' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
                 class="whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition-colors">
-                Org Types
+                Organization Types
             </button>
             <div class="flex-1"></div>
             <template x-if="sectionTab === 'departments'">
@@ -40,13 +40,12 @@
         <!-- Departments Pills -->
         <div x-show="sectionTab === 'departments'" class="flex flex-wrap gap-3 min-h-[42px]">
             @forelse($departments ?? [] as $department)
-                <a href="{{ route('admin.departments.show', $department) }}" class="focus:outline-none">
-                    <span class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border bg-white shadow-sm text-sm card-hover min-h-[42px] transition-transform duration-200 cursor-pointer"
-                        style="border-color: {{ $department->color ?? '#e5e7eb' }}; background: {{ $department->color ? $department->color.'20' : '#fff' }}; color: {{ $department->color ?? '#111827' }};"
-                        onmouseover="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
-                        onmouseout="this.style.background='{{ $department->color ? $department->color.'20' : '#fff' }}';this.style.borderColor='{{ $department->color ?? '#e5e7eb' }}';this.style.color='{{ $department->color ?? '#111827' }}'"
-                        onfocus="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
-                        onblur="this.style.background='{{ $department->color ? $department->color.'20' : '#fff' }}';this.style.borderColor='{{ $department->color ?? '#e5e7eb' }}';this.style.color='{{ $department->color ?? '#111827' }}'">
+                <a href="{{ route('admin.departments.show', $department) }}" class="focus:outline-none group">
+                    <span class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border bg-white shadow-sm text-sm card-hover min-h-[42px] transition-transform duration-200 cursor-pointer group-hover:scale-105"
+                        style="border-color: {{ $department->color ?? '#e5e7eb' }}; background: {{ $department->color ? $department->color.'20' : '#fff' }}; color: {{ $department->color ?? '#111827' }};">
+                        @if($department->color)
+                            <span class="inline-block w-3 h-3 rounded-full mr-2" style="background: {{ $department->color }};"></span>
+                        @endif
                         <span class="font-medium">{{ $department->name }}</span>
                     </span>
                 </a>
@@ -59,11 +58,7 @@
             @forelse($orgTypes ?? [] as $type)
                 <a href="{{ route('admin.org_types.show', $type) }}" class="focus:outline-none">
                     <span class="btn flex items-center gap-2 px-4 py-2 rounded-[6px] border border-gray-200 bg-white shadow-sm text-sm card-hover min-h-[42px] transition-transform duration-200 cursor-pointer"
-                        style="border-color: #e5e7eb;"
-                        onmouseover="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
-                        onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#111827'"
-                        onfocus="this.style.background='#00471B22';this.style.borderColor='#00471B';this.style.color='#00471B'"
-                        onblur="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#111827'">
+                        style="border-color: #e5e7eb;">
                         <span class="font-medium">{{ $type->name }}</span>
                     </span>
                 </a>
@@ -85,7 +80,7 @@
                 <button @click="tab = 'templates'"
                     :class="tab === 'templates' ? 'border-[#00471B] text-[#00471B]' : 'border-transparent text-gray-500 hover:text-[#00471B] hover:border-[#00471B]'"
                     class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm focus:outline-none transition-colors">
-                    Org Templates
+                    Organization Terms
                 </button>
             </div>
             <button onclick="showAddOrgModal()" class="btn btn-green ml-4" type="button">
@@ -100,8 +95,8 @@
                         style="border-left: 6px solid {{ $org->department && $org->department->color ? $org->department->color : '#e5e7eb' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
                         onclick="window.location='{{ route('admin.orgs.show', $org) }}'"
                         onmouseover="this.style.transform='scale(1.025)';" onmouseout="this.style.transform='none';">
-                        @if($org->logo)
-                            <img src="{{ asset($org->logo) }}" alt="{{ $org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
+                        @if($org->logo && file_exists(public_path('storage/' . $org->logo)))
+                            <img src="{{ asset('storage/' . $org->logo) }}" alt="{{ $org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
                         @else
                             <div class="w-16 h-16 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-2xl font-bold border border-gray-200 shadow-sm">
                                 <i class="fas fa-users"></i>
@@ -139,8 +134,18 @@
             <h3 class="text-lg font-semibold text-white">Add Organization</h3>
             <button onclick="hideAddOrgModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
         </div>
-        <form method="POST" action="{{ route('admin.orgs.store') }}" class="px-6 pt-6 pb-2">
+        <form method="POST" action="{{ route('admin.orgs.store') }}" class="px-6 pt-6 pb-2" enctype="multipart/form-data">
             @csrf
+            <div class="mb-4 flex flex-col items-center">
+                <label class="form-label text-base mb-1">Organization Logo</label>
+                <div id="addOrgLogoPreviewWrapper" class="mb-2" style="display:none;">
+                    <img id="addOrgLogoPreview" src="#" alt="Logo Preview" class="w-20 h-20 rounded-full object-cover border border-gray-200 shadow-sm mx-auto" style="max-width:80px; max-height:80px;" />
+                </div>
+                <button type="button" onclick="document.getElementById('addOrgLogoInput').click();" class="btn btn-green flex items-center gap-2 mb-2">
+                    <i class="fas fa-upload"></i> <span>Choose Logo</span>
+                </button>
+                <input id="addOrgLogoInput" type="file" name="logo" accept="image/*" class="hidden" onchange="previewAddOrgLogo(event)">
+            </div>
             <div class="mb-4">
                 <label class="form-label text-base">Organization Name</label>
                 <input type="text" name="name" class="form-input w-full text-base" required>
@@ -156,8 +161,8 @@
             </div>
             <div class="mb-4">
                 <label class="form-label text-base">Department</label>
-                <select id="orgDepartmentSelect" name="department_id" class="form-select w-full text-base" required>
-                    <option value="">Select Department</option>
+                <select id="orgDepartmentSelect" name="department_id" class="form-select w-full text-base">
+                    <option value="">No Department</option>
                     @foreach($departments ?? [] as $department)
                         <option value="{{ $department->id }}">{{ $department->name }}</option>
                     @endforeach
@@ -208,7 +213,7 @@
 <div id="addTypeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
         <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
-            <h2 class="text-lg font-bold text-white m-0">Add Org Type</h2>
+            <h2 class="text-lg font-bold text-white m-0">Add Organization Type</h2>
             <button onclick="hideAddTypeModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">
                 <i class="fas fa-times"></i>
             </button>
@@ -245,6 +250,37 @@ function showAddTypeModal() {
 }
 function hideAddTypeModal() {
     document.getElementById('addTypeModal').classList.add('hidden');
+}
+
+function previewAddOrgLogo(event) {
+    const input = event.target;
+    const previewWrapper = document.getElementById('addOrgLogoPreviewWrapper');
+    const preview = document.getElementById('addOrgLogoPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewWrapper.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '#';
+        previewWrapper.style.display = 'none';
+    }
+}
+function resetAddOrgLogoPreview() {
+    const previewWrapper = document.getElementById('addOrgLogoPreviewWrapper');
+    const preview = document.getElementById('addOrgLogoPreview');
+    preview.src = '#';
+    previewWrapper.style.display = 'none';
+    const fileInput = document.querySelector('#addOrgModal input[name="logo"]');
+    if (fileInput) fileInput.value = '';
+}
+// Extend hideAddOrgModal to reset logo preview
+const originalHideAddOrgModal = hideAddOrgModal;
+hideAddOrgModal = function() {
+    originalHideAddOrgModal();
+    resetAddOrgLogoPreview();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -313,6 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
 #addTypeModal .form-label {
     font-size: 14px !important;
     height: auto;
+}
+#addOrgLogoPreviewWrapper img {
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
 }
 </style>
 @endsection

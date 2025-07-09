@@ -200,27 +200,18 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->email }}</td>
                                     <!-- Actions -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        @php
-                                            $actions = [
-                                                [
-                                                    'type' => 'form',
-                                                    'form_url' => route('admin.user-requests.approve', $request),
-                                                    'method' => 'POST',
-                                                    'icon' => 'fas fa-check',
-                                                    'variant' => 'approve',
-                                                    'tooltip' => 'Approve Request',
-                                                ],
-                                                [
-                                                    'type' => 'form',
-                                                    'form_url' => route('admin.user-requests.reject', $request),
-                                                    'method' => 'POST',
-                                                    'icon' => 'fas fa-times',
-                                                    'variant' => 'reject',
-                                                    'tooltip' => 'Reject Request',
-                                                ],
-                                            ];
-                                        @endphp
-                                        <x-table-actions :actions="$actions" />
+                                        <form action="{{ route('admin.user-requests.approve', $request) }}" method="POST" style="display:inline" class="request-action-form">
+                                            @csrf
+                                            <button type="submit" class="text-green-600 hover:text-green-900 mr-2" title="Approve Request">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.user-requests.reject', $request) }}" method="POST" style="display:inline" class="request-action-form">
+                                            @csrf
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Reject Request">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
@@ -371,28 +362,6 @@
             <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
                 <button type="button" onclick="closeModal('approveModal')" class="btn btn-gray">Cancel</button>
                 <x-button onclick="submitApproveRequestForm(event)" variant="primary" icon="fas fa-check">Approve Request</x-button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Reject Modal -->
-<div id="rejectModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
-        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-red-900">
-            <h3 class="text-lg font-semibold text-white">Reject User Request</h3>
-            <button onclick="closeModal('rejectModal')" class="text-white hover:text-gray-200 bg-red-800 rounded px-2 py-1 focus:outline-none"><i class="fas fa-times"></i></button>
-        </div>
-        <form id="rejectRequestForm" method="POST" class="px-6 pt-6 pb-2">
-            @csrf
-            <input type="hidden" name="request_id" id="reject_request_id">
-            <div class="mb-4">
-                <label for="reject_reason" class="form-label">Reason for Rejection</label>
-                <textarea id="reject_reason" name="reject_reason" class="form-textarea" required></textarea>
-            </div>
-            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
-                <button type="button" onclick="closeModal('rejectModal')" class="btn btn-gray">Cancel</button>
-                <x-button onclick="submitRejectRequestForm(event)" variant="danger" icon="fas fa-times">Reject Request</x-button>
             </div>
         </form>
     </div>
@@ -852,27 +821,6 @@ function openApproveModal(requestId, studentName) {
     modal.classList.add('show');
 }
 
-function openRejectModal(requestId, studentName) {
-    const modal = document.getElementById('rejectModal');
-    const requestIdInput = document.getElementById('reject_request_id');
-    const rejectReasonTextarea = document.getElementById('reject_reason');
-    const rejectForm = document.getElementById('rejectRequestForm');
-
-    if (requestIdInput) requestIdInput.value = requestId;
-    if (rejectForm) {
-        rejectForm.action = `/admin/user-requests/${requestId}/reject`;
-    }
-
-    // Clear previous reason
-    if (rejectReasonTextarea) {
-        rejectReasonTextarea.value = '';
-        rejectReasonTextarea.classList.remove('bg-red-50', 'focus:bg-red-50');
-    }
-
-    modal.classList.remove('hidden');
-    modal.classList.add('show');
-}
-
 function submitApproveRequestForm(event) {
     if (event) event.preventDefault();
     const form = document.getElementById('approveRequestForm');
@@ -930,64 +878,61 @@ function submitApproveRequestForm(event) {
     });
 }
 
-function submitRejectRequestForm(event) {
-    if (event) event.preventDefault();
-    const form = document.getElementById('rejectRequestForm');
-    const formData = new FormData(form);
-
-    let submitBtn = event.target;
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Rejecting...';
-    submitBtn.disabled = true;
-
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-        }
-    })
-    .then(async response => {
-        let data;
-        try {
-            data = await response.json();
-        } catch {
-            throw new Error('Invalid JSON response');
-        }
-        if (response.status === 422 && data.errors) {
-            showFormErrors(data.errors);
-            showToast('Please fix the errors below and try again.', 'error');
-            return;
-        }
-        if (!response.ok) {
-            throw new Error(data.message || 'An error occurred');
-        }
-        if (data.success) {
-            closeModal('rejectModal');
-            showToast('Request rejected successfully!', 'success');
-            // Optionally, refresh the requests table or remove the rejected request row
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            showToast(data.message || 'An error occurred while rejecting the request.', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('An error occurred while rejecting the request.', 'error');
-    })
-    .finally(() => {
-        if (submitBtn) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
+// Add AJAX for approve/reject forms with toast feedback
+function handleRequestActionForms() {
+    document.querySelectorAll('.request-action-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const isApprove = form.action.includes('/approve');
+            const isReject = form.action.includes('/reject');
+            const btn = form.querySelector('button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class='fas fa-spinner fa-spin mr-2'></i>${isApprove ? 'Approving...' : 'Rejecting...'}`;
+            btn.disabled = true;
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(form)
+            })
+            .then(async response => {
+                let data;
+                try { data = await response.json(); } catch { data = {}; }
+                if (response.status === 422 && data.errors) {
+                    showToast('Validation error. Please try again.', 'error');
+                    return;
+                }
+                if (!response.ok) {
+                    showToast(data.message || 'An error occurred.', 'error');
+                    return;
+                }
+                if (data.success) {
+                    showToast(isApprove ? 'Request approved!' : 'Request rejected!', 'success');
+                    setTimeout(() => {
+                        // Stay on the requests tab after reload
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('tab', 'requests');
+                        window.location.href = url.toString();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'An error occurred.', 'error');
+                }
+            })
+            .catch(() => {
+                showToast('An error occurred.', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        });
     });
 }
+document.addEventListener('DOMContentLoaded', handleRequestActionForms);
 
-// ...existing scripts for real-time validation, etc...
 window.onclick = function(event) {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {

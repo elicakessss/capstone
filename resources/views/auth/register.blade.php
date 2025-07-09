@@ -91,18 +91,6 @@
                 <p class="form-error mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
-        <div class="mb-4">
-            <label for="role" class="form-label">Role</label>
-            <select id="role" name="role" class="form-select @error('role') bg-red-50 focus:bg-red-50 @enderror" required>
-                <option value="">Select Role</option>
-                <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>Student</option>
-                <option value="adviser" {{ old('role') == 'adviser' ? 'selected' : '' }}>Adviser</option>
-                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrator</option>
-            </select>
-            @error('role')
-                <p class="form-error mt-1 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        </div>
         <div class="form-row mb-4" style="display: flex; gap: 1rem;">
             <div class="form-col" style="flex: 1;">
                 <label for="password" class="form-label">Password</label>

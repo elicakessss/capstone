@@ -769,6 +769,7 @@
                 </div>
 
                 <!-- Right Side - User Menu -->
+                @auth
                 <div class="flex items-center space-x-4">
                     <!-- Notifications -->
                     <div class="relative">
@@ -816,6 +817,7 @@
                         </div>
                     </div>
                 </div>
+                @endauth
             </div>
         </header>
 

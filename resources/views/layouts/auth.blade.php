@@ -163,6 +163,8 @@
                     <span class="text-sm text-gray-600">Already have an account?
                         <a href="{{ route('login') }}" class="auth-header-link text-green-#00471B hover:text-yellow-400 font-semibold underline transition-colors duration-150">Log in!</a>
                     </span>
+                @elseif(request()->routeIs('registration.pending'))
+                    <!-- No login/signup links on registration pending page -->
                 @else
                     <a href="{{ route('login') }}" class="auth-header-link text-green-700 hover:text-yellow-400 font-semibold underline transition-colors duration-150">Log In</a>
                     <a href="{{ route('register') }}" class="auth-header-link text-green-700 hover:text-yellow-400 font-semibold underline transition-colors duration-150">Sign Up</a>

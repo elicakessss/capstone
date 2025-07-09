@@ -31,7 +31,6 @@ class UserRequestController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:user_requests', 'unique:users'],
             'id_number' => ['required', 'string', 'max:255', 'unique:user_requests', 'unique:users'],
             'department_id' => ['required', 'exists:departments,id'],
-            'role' => ['required', 'in:student,adviser,admin'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms' => ['required', 'accepted'],
         ]);
@@ -42,7 +41,7 @@ class UserRequestController extends Controller
             'email' => $request->email,
             'id_number' => $request->id_number,
             'department_id' => $request->department_id,
-            'role' => $request->role,
+            'role' => 'student', // force student role
             'password' => Hash::make($request->password),
             'status' => 'pending',
         ]);
@@ -94,6 +93,12 @@ class UserRequestController extends Controller
         ]);
 
         if (!$userRequest->isPending()) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This request has already been processed.'
+                ], 400);
+            }
             return back()->with('error', 'This request has already been processed.');
         }
 
@@ -104,7 +109,7 @@ class UserRequestController extends Controller
             'email' => $userRequest->email,
             'id_number' => $userRequest->id_number,
             'department_id' => $userRequest->department_id,
-            'role' => $userRequest->role, // Ensure role is copied
+            'roles' => [$userRequest->role], // Store as array, not JSON string
             'password' => $userRequest->password, // Already hashed
         ]);
 
@@ -116,6 +121,13 @@ class UserRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User request approved and account created successfully.'
+            ]);
+        }
+
         return back()->with('success', 'User request approved and account created successfully.');
     }
 
@@ -124,21 +136,24 @@ class UserRequestController extends Controller
      */
     public function reject(Request $request, UserRequest $userRequest)
     {
-        $request->validate([
-            'admin_notes' => ['required', 'string', 'max:1000'],
-        ]);
-
         if (!$userRequest->isPending()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This request has already been processed.'
+                ], 400);
+            }
             return back()->with('error', 'This request has already been processed.');
         }
 
-        $userRequest->update([
-            'status' => 'rejected',
-            'admin_notes' => $request->admin_notes,
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-        ]);
+        $userRequest->delete();
 
-        return back()->with('success', 'User request rejected successfully.');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User request rejected and deleted.'
+            ]);
+        }
+        return back()->with('success', 'User request rejected and deleted.');
     }
 }

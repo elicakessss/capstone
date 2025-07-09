@@ -33,7 +33,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Orgs
     Route::resource('orgs', App\Http\Controllers\OrgTermController::class)->only(['index', 'store']);
-    Route::get('orgs/{org}', [App\Http\Controllers\OrgTermController::class, 'show'])->name('orgs.show');
+    Route::get('orgs/{org}', [App\Http\Controllers\OrgTermController::class, 'showOrg'])->name('orgs.show');
 
     // Evaluations (all roles)
     Route::prefix('evaluations')->name('evaluations.')->group(function () {

@@ -7,7 +7,12 @@
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ $orgTerm->org->name }}<span class="text-lg text-gray-500 font-normal ml-2">({{ $orgTerm->term }})</span></h1>
+            <h1 class="text-3xl font-bold text-gray-900">
+                {{ $orgTerm->org->name }}
+                @if(!empty($orgTerm->academic_year))
+                    <span class="text-lg text-gray-500 font-normal ml-2">({{ $orgTerm->academic_year }})</span>
+                @endif
+            </h1>
         </div>
         <a href="{{ route('orgs.index') }}" class="btn btn-green" type="button">
             <i class="fas fa-arrow-left"></i> Back
@@ -16,10 +21,10 @@
     <!-- Main Grid Layout: 2 cards on top, 1 wide card below -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- Org Term Details Card -->
-        <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between" style="border-left: 5px solid {{ $orgTerm->org->department->color ?? '#e5e7eb' }};">
+        <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between" style="border-left: 5px solid {{ $orgTerm->org->department->color ?? '#00471B' }};">
             <div class="flex items-center gap-4 mb-4">
                 @if($orgTerm->org->logo)
-                    <img src="{{ asset($orgTerm->org->logo) }}" alt="{{ $orgTerm->org->name }} Logo" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($orgTerm->org->logo) }}" alt="{{ $orgTerm->org->name }} Logo" class="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm">
                 @else
                     <div class="w-12 h-12 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-xl font-bold border border-gray-200 shadow-sm">
                         <i class="fas fa-users"></i>
@@ -31,13 +36,9 @@
                     @if($orgTerm->org->department)
                         <div class="text-gray-500 text-sm mt-1">Department: {{ $orgTerm->org->department->name }}</div>
                     @endif
+                    <div class="text-gray-500 text-sm mt-1">Academic Year: <span class="font-semibold text-green-700">{{ $orgTerm->academic_year ?? 'N/A' }}</span></div>
                 </div>
             </div>
-            <div class="mb-2">
-                <label class="block text-gray-700 font-medium mb-1">Description</label>
-                <div class="text-gray-800">{{ $orgTerm->org->description ?? '—' }}</div>
-            </div>
-            <span class="org-term text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ $orgTerm->term }}</span>
         </div>
         <!-- Advisers Card -->
         <div class="bg-white rounded-lg shadow p-6 min-h-[180px] flex flex-col justify-between">
@@ -74,34 +75,46 @@
             @if($positions->count())
                 <ul class="mb-2">
                     @foreach($sortedPositions as $position)
-                        <li class="mb-2 p-3 bg-gray-50 rounded border flex flex-col md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <span class="font-semibold">{{ $position->title }}</span>
-                                <span class="text-xs text-gray-400 ml-2">(Slots: {{ $position->slots }}, Order: {{ $position->order }})</span>
-                                <div class="text-xs text-gray-500 mt-1">Assigned:
-                                    @if($position->users->count())
-                                        @foreach($position->users as $user)
-                                            <span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded mr-1">{{ $user->name }}
-                                                @if($isAdviserOrAdmin)
-                                                    <form method="POST" action="{{ route('org_terms.removeStudent', [$orgTerm, $position, $user]) }}" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="ml-1 text-red-600 hover:text-red-800" title="Remove Student" style="background: none; border: none; padding: 0; cursor: pointer;">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </span>
-                                        @endforeach
-                                    @else
-                                        <span class="text-gray-400">No students assigned</span>
-                                    @endif
+                        <li class="mb-2 p-3 bg-gray-50 rounded border">
+                            <div class="mb-2 flex items-center justify-between">
+                                <div>
+                                    <span class="font-semibold">{{ $position->title }}</span>
+                                    <span class="text-xs text-gray-400 ml-2">(Slots: {{ $position->slots }}, Order: {{ $position->order }})</span>
                                 </div>
+                                @if($isAdviserOrAdmin)
+                                    <button class="btn btn-blue btn-sm" type="button" onclick="showAssignStudentModal({{ $position->id }})">Assign</button>
+                                @endif
                             </div>
-                            @if($isAdviserOrAdmin)
-                            <div class="flex gap-2 mt-2 md:mt-0">
-                                <button class="btn btn-blue" type="button" onclick="showAssignStudentModal({{ $position->id }})">Assign</button>
-                            </div>
+                            <div class="text-xs text-gray-500 mb-1">Assigned:</div>
+                            @if($position->users->count())
+                                <ul class="space-y-2">
+                                    @foreach($position->users as $user)
+                                        <li class="bg-white border border-gray-200 rounded px-3 py-3 flex items-center gap-4" style="border-left: 6px solid {{ $user->department->color ?? '#e5e7eb' }};">
+                                            @if($user->profile_picture)
+                                                <img src="{{ \Illuminate\Support\Facades\Storage::url($user->profile_picture) }}" alt="{{ $user->name }} Profile" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                                            @else
+                                                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-lg font-bold border border-gray-200">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            @endif
+                                            <div class="flex-1 min-w-0">
+                                                <div class="font-medium text-gray-900 truncate">{{ $user->name }}</div>
+                                                <div class="text-xs text-gray-500 truncate">ID: {{ $user->id }}</div>
+                                            </div>
+                                            @if($isAdviserOrAdmin)
+                                                <form method="POST" action="{{ route('org_terms.removeStudent', [$orgTerm, $position, $user]) }}" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="ml-1 text-red-600 hover:text-red-800" title="Remove Student" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <div class="text-gray-400">No students assigned</div>
                             @endif
                         </li>
                     @endforeach

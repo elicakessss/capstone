@@ -24,11 +24,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse(($assignedOrgs ?? []) as $org)
                 <div class="org-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 transition-transform duration-200 cursor-pointer min-h-[120px]"
-                    style="border-left: 6px solid {{ $org->department && $org->department->color ? $org->department->color : '#e5e7eb' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
+                    style="border-left: 6px solid {{ $org->department && $org->department->color ? $org->department->color : '#00471B' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
                     onclick="window.location='{{ route('orgs.show', $org) }}'"
                     onmouseover="this.style.transform='scale(1.025)';" onmouseout="this.style.transform='none';">
                     @if($org->logo)
-                        <img src="{{ asset($org->logo) }}" alt="{{ $org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($org->logo) }}" alt="{{ $org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
                     @else
                         <div class="w-16 h-16 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-2xl font-bold border border-gray-200 shadow-sm">
                             <i class="fas fa-users"></i>
@@ -65,11 +65,11 @@
             @endphp
             @forelse($allOrgTerms as $term)
                 <div class="org-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 transition-transform duration-200 cursor-pointer min-h-[120px]"
-                    style="border-left: 6px solid {{ ($term->org && $term->org->department && $term->org->department->color) ? $term->org->department->color : '#e5e7eb' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
+                    style="border-left: 6px solid {{ ($term->org && $term->org->department && $term->org->department->color) ? $term->org->department->color : '#00471B' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
                     onclick="window.location='{{ route('org_terms.show', $term->id) }}'"
                     onmouseover="this.style.transform='scale(1.025)';" onmouseout="this.style.transform='none';">
                     @if($term->org && $term->org->logo)
-                        <img src="{{ asset($term->org->logo) }}" alt="{{ $term->org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($term->org->logo) }}" alt="{{ $term->org->name }} Logo" class="w-16 h-16 rounded-full object-cover border border-gray-200 shadow-sm">
                     @else
                         <div class="w-16 h-16 rounded-full flex items-center justify-center bg-green-100 text-green-800 text-2xl font-bold border border-gray-200 shadow-sm">
                             <i class="fas fa-users"></i>
@@ -91,103 +91,106 @@
             @endforelse
         </div>
     </div>
-
-    <!-- Modal for Creating Org Term (Adviser) -->
-    @if($isAdviserOrAdmin)
-    <div id="createOrgModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-            <button id="closeOrgModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">&times;</button>
-            <h3 class="text-lg font-bold mb-4">Create Organization Term</h3>
-            @if(isset($assignedOrgs) && count($assignedOrgs) > 0)
-            <form id="createOrgForm" method="POST" action="{{ route('orgs.store') }}">
-                @csrf
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-1">Organization Name</label>
-                    <select name="org_id" id="orgSelect" class="form-select w-full" required>
-                        <option value="">-- Select --</option>
-                        @foreach(($assignedOrgs ?? []) as $org)
-                            <option value="{{ $org->id }}">{{ $org->name }} ({{ $org->type }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div id="academicYearSection" class="mb-4">
-                    <label class="block text-gray-700 font-medium mb-1">Academic Year <span class="text-red-500">*</span></label>
-                    <input type="text" name="academic_year" id="academicYearInput" class="form-input w-full" placeholder="e.g. 2025-2026" required>
-                    <div id="yearError" class="text-red-500 text-xs mt-1 hidden">This organization already exists for the selected academic year.</div>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="cancelOrgModalBtn" class="btn btn-sm btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-sm btn-primary" id="submitCreateOrgBtn" disabled>Create</button>
-                </div>
-            </form>
-            @else
-            <div class="text-gray-500 text-center py-8">No organizations available.</div>
-            <div class="flex justify-end mt-4">
-                <button type="button" id="cancelOrgModalBtn" class="btn btn-sm btn-secondary">Close</button>
+</div>
+@if($isAdviserOrAdmin)
+<!-- Modal for Creating Org Term (Adviser) - moved outside main container for full overlay coverage -->
+<div id="createOrgModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+        <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+            <h3 class="text-lg font-semibold text-white">Create Organization Term</h3>
+            <button id="closeOrgModalBtn" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">&times;</button>
+        </div>
+        <div class="px-6 pt-6 pb-2">
+        @if(isset($assignedOrgs) && count($assignedOrgs) > 0)
+        <form id="createOrgForm" method="POST" action="{{ route('orgs.store') }}">
+            @csrf
+            <div class="mb-4">
+                <label class="form-label text-base mb-1">Organization Name</label>
+                <select name="org_id" id="orgSelect" class="form-select w-full" required>
+                    <option value="">-- Select --</option>
+                    @foreach(($assignedOrgs ?? []) as $org)
+                        <option value="{{ $org->id }}">{{ $org->name }} ({{ $org->type }})</option>
+                    @endforeach
+                </select>
             </div>
-            @endif
+            <div id="academicYearSection" class="mb-4">
+                <label class="form-label text-base mb-1">Academic Year <span class="text-red-500">*</span></label>
+                <input type="text" name="academic_year" id="academicYearInput" class="form-input w-full" placeholder="e.g. 2025-2026" required>
+                <div id="yearError" class="text-red-500 text-xs mt-1 hidden">This organization already exists for the selected academic year.</div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                <button type="button" id="cancelOrgModalBtn" class="btn btn-gray">Cancel</button>
+                <button type="submit" class="btn btn-green" id="submitCreateOrgBtn" disabled>Create</button>
+            </div>
+        </form>
+        @else
+        <div class="text-gray-500 text-center py-8">No organizations available.</div>
+        <div class="flex justify-end mt-4">
+            <button type="button" id="cancelOrgModalBtn" class="btn btn-gray">Close</button>
+        </div>
+        @endif
         </div>
     </div>
-    @endif
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const createOrgBtn = document.getElementById('createOrgBtn');
-            const createOrgModal = document.getElementById('createOrgModal');
-            const closeOrgModalBtn = document.getElementById('closeOrgModalBtn');
-            const cancelOrgModalBtn = document.getElementById('cancelOrgModalBtn');
-            const orgSelect = document.getElementById('orgSelect');
-            const academicYearInput = document.getElementById('academicYearInput');
-            const submitCreateOrgBtn = document.getElementById('submitCreateOrgBtn');
-            const yearError = document.getElementById('yearError');
+</div>
+@endif
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const createOrgBtn = document.getElementById('createOrgBtn');
+        const createOrgModal = document.getElementById('createOrgModal');
+        const closeOrgModalBtn = document.getElementById('closeOrgModalBtn');
+        const cancelOrgModalBtn = document.getElementById('cancelOrgModalBtn');
+        const orgSelect = document.getElementById('orgSelect');
+        const academicYearInput = document.getElementById('academicYearInput');
+        const submitCreateOrgBtn = document.getElementById('submitCreateOrgBtn');
+        const yearError = document.getElementById('yearError');
 
-            function openOrgModal() { createOrgModal.classList.remove('hidden'); }
-            function closeOrgModal() { createOrgModal.classList.add('hidden'); if(orgSelect){orgSelect.value = '';} if(academicYearInput){academicYearInput.value = '';} if(submitCreateOrgBtn){submitCreateOrgBtn.disabled = true;} if(yearError){yearError.classList.add('hidden');} }
-            if (createOrgBtn) createOrgBtn.addEventListener('click', openOrgModal);
-            if (closeOrgModalBtn) closeOrgModalBtn.addEventListener('click', closeOrgModal);
-            if (cancelOrgModalBtn) cancelOrgModalBtn.addEventListener('click', closeOrgModal);
+        function openOrgModal() { createOrgModal.classList.remove('hidden'); }
+        function closeOrgModal() { createOrgModal.classList.add('hidden'); if(orgSelect){orgSelect.value = '';} if(academicYearInput){academicYearInput.value = '';} if(submitCreateOrgBtn){submitCreateOrgBtn.disabled = true;} if(yearError){yearError.classList.add('hidden');} }
+        if (createOrgBtn) createOrgBtn.addEventListener('click', openOrgModal);
+        if (closeOrgModalBtn) closeOrgModalBtn.addEventListener('click', closeOrgModal);
+        if (cancelOrgModalBtn) cancelOrgModalBtn.addEventListener('click', closeOrgModal);
 
-            if(orgSelect && academicYearInput && submitCreateOrgBtn && yearError) {
-                let lastCheck = { org: '', year: '', result: null };
-                function checkDuplicate() {
-                    const orgId = orgSelect.value;
-                    const year = academicYearInput.value.trim();
-                    submitCreateOrgBtn.disabled = true;
-                    yearError.classList.add('hidden');
-                    if (!orgId || !year) return;
-                    // Only check if changed
-                    if (lastCheck.org === orgId && lastCheck.year === year && lastCheck.result !== null) {
-                        if (lastCheck.result) {
+        if(orgSelect && academicYearInput && submitCreateOrgBtn && yearError) {
+            let lastCheck = { org: '', year: '', result: null };
+            function checkDuplicate() {
+                const orgId = orgSelect.value;
+                const year = academicYearInput.value.trim();
+                submitCreateOrgBtn.disabled = true;
+                yearError.classList.add('hidden');
+                if (!orgId || !year) return;
+                // Only check if changed
+                if (lastCheck.org === orgId && lastCheck.year === year && lastCheck.result !== null) {
+                    if (lastCheck.result) {
+                        yearError.classList.remove('hidden');
+                        submitCreateOrgBtn.disabled = true;
+                    } else {
+                        yearError.classList.add('hidden');
+                        submitCreateOrgBtn.disabled = false;
+                    }
+                    return;
+                }
+                fetch(`{{ route('orgs.check-duplicate') }}?org_id=${encodeURIComponent(orgId)}&academic_year=${encodeURIComponent(year)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        lastCheck = { org: orgId, year: year, result: data.exists };
+                        if (data.exists) {
                             yearError.classList.remove('hidden');
                             submitCreateOrgBtn.disabled = true;
                         } else {
                             yearError.classList.add('hidden');
                             submitCreateOrgBtn.disabled = false;
                         }
-                        return;
-                    }
-                    fetch(`{{ route('orgs.check-duplicate') }}?org_id=${encodeURIComponent(orgId)}&academic_year=${encodeURIComponent(year)}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            lastCheck = { org: orgId, year: year, result: data.exists };
-                            if (data.exists) {
-                                yearError.classList.remove('hidden');
-                                submitCreateOrgBtn.disabled = true;
-                            } else {
-                                yearError.classList.add('hidden');
-                                submitCreateOrgBtn.disabled = false;
-                            }
-                        })
-                        .catch(() => {
-                            submitCreateOrgBtn.disabled = true;
-                            yearError.classList.add('hidden');
-                        });
-                }
-                orgSelect.addEventListener('change', checkDuplicate);
-                academicYearInput.addEventListener('input', checkDuplicate);
+                    })
+                    .catch(() => {
+                        submitCreateOrgBtn.disabled = true;
+                        yearError.classList.add('hidden');
+                    });
             }
-        });
-    </script>
-</div>
+            orgSelect.addEventListener('change', checkDuplicate);
+            academicYearInput.addEventListener('input', checkDuplicate);
+        }
+    });
+</script>
 <style>
 .org-card .org-title { font-size: 1.125rem; }
 .org-card .org-type, .org-card .org-term { font-size: 0.85rem; }

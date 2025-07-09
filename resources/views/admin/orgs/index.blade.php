@@ -92,7 +92,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 @forelse($orgs as $org)
                     <div class="org-card bg-white rounded-lg shadow-sm p-6 flex items-center gap-4 transition-transform duration-200 cursor-pointer min-h-[120px]"
-                        style="border-left: 6px solid {{ $org->department && $org->department->color ? $org->department->color : '#e5e7eb' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
+                        style="border-left: 6px solid {{ $org->department && $org->department->color ? $org->department->color : '#00471B' }}; border-top: 1.5px solid #f3f4f6; border-bottom: 1.5px solid #f3f4f6; border-right: 1.5px solid #f3f4f6; border-radius: 0.75rem;"
                         onclick="window.location='{{ route('admin.orgs.show', $org) }}'"
                         onmouseover="this.style.transform='scale(1.025)';" onmouseout="this.style.transform='none';">
                         @if($org->logo && file_exists(public_path('storage/' . $org->logo)))

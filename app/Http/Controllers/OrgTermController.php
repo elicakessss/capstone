@@ -94,6 +94,10 @@ class OrgTermController extends Controller
         if ($org->department_id && $student->department_id != $org->department_id) {
             return back()->withErrors(['student_id' => 'Student does not belong to the required department.']);
         }
+        // Enforce slot limit
+        if ($position->users->count() >= $position->slots) {
+            return back()->withErrors(['position_id' => 'This position has reached its slot limit.']);
+        }
         // Attach student to position if not already assigned
         if (!$position->users->contains($request->student_id)) {
             $position->users()->attach($request->student_id);
@@ -130,5 +134,12 @@ class OrgTermController extends Controller
             return $student;
         });
         return response()->json($students);
+    }
+
+    // Show assigned organization (user-side org show)
+    public function showOrg($id)
+    {
+        $org = \App\Models\Org::with(['department', 'advisers', 'positions.users', 'creator'])->findOrFail($id);
+        return view('orgs.show', compact('org'));
     }
 }

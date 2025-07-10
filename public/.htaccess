@@ -1,4 +1,9 @@
 <IfModule mod_rewrite.c>
+    # Allow access to storage symlinked files
+    RewriteCond %{REQUEST_URI} ^/storage/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>

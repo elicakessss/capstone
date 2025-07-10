@@ -73,4 +73,10 @@ class Org extends Model
     {
         return $this->belongsToMany(EvaluationForm::class, 'evaluation_form_org', 'org_id', 'evaluation_form_id');
     }
+
+    // Org Terms (all academic years for this org)
+    public function orgTerms()
+    {
+        return $this->hasMany(OrgTerm::class, 'org_id');
+    }
 }

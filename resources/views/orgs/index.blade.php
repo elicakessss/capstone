@@ -84,6 +84,11 @@
                             @endif
                         </div>
                         <span class="org-term text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded">{{ $term->academic_year ?? '' }}</span>
+                        @if(isset($term->pivot) && $term->pivot->role)
+                            <span class="ml-2 org-role text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Role: {{ $term->pivot->role }}</span>
+                        @elseif(isset($term->role))
+                            <span class="ml-2 org-role text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Role: {{ $term->role }}</span>
+                        @endif
                     </div>
                 </div>
             @empty

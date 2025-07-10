@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\PositionsController;
+use App\Http\Controllers\ProfileController;
 
 // Redirect root to dashboard or login
 Route::get('/', function () {
@@ -13,11 +14,14 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
     Route::get('/profile', fn() => view('profile.edit'))->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Portfolio
     Route::prefix('portfolio')->name('portfolio.')->group(function () {
-        Route::get('/', fn() => view('portfolio.index'))->name('index');
-        Route::get('/documents', fn() => view('portfolio.documents'))->name('documents');
+        Route::get('/', [App\Http\Controllers\PortfolioController::class, 'index'])->name('index');
+        Route::post('/upload-certificate', [App\Http\Controllers\PortfolioController::class, 'uploadCertificate'])->name('uploadCertificate');
+        Route::post('/awards', [App\Http\Controllers\AwardController::class, 'store'])->name('awards.store');
+        Route::delete('/awards/{award}', [App\Http\Controllers\AwardController::class, 'destroy'])->name('awards.destroy');
     });
 
     // AJAX: Check for duplicate org+year (must be outside closure-based prefix group)

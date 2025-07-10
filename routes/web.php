@@ -22,6 +22,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/upload-certificate', [App\Http\Controllers\PortfolioController::class, 'uploadCertificate'])->name('uploadCertificate');
         Route::post('/awards', [App\Http\Controllers\AwardController::class, 'store'])->name('awards.store');
         Route::delete('/awards/{award}', [App\Http\Controllers\AwardController::class, 'destroy'])->name('awards.destroy');
+        // Award Request
+        Route::post('/request-award', [App\Http\Controllers\AwardRequestController::class, 'store'])->name('requestAward');
     });
 
     // AJAX: Check for duplicate org+year (must be outside closure-based prefix group)
@@ -124,6 +126,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/forms/{form}/assign-orgs', [App\Http\Controllers\Admin\EvaluationFormController::class, 'assignOrgs'])->name('forms.assign-orgs');
         // Update criteria weights
         Route::put('forms/{form}/criteria-weights', [App\Http\Controllers\Admin\EvaluationFormController::class, 'updateCriteriaWeights'])->name('forms.criteria-weights.update');
+        // Award Types Management
+        Route::resource('award-types', App\Http\Controllers\Admin\AwardTypeController::class)->except(['create', 'edit', 'show']);
+        // Award Requests Management
+        Route::resource('award-requests', App\Http\Controllers\Admin\AwardRequestController::class)->only(['index', 'show']);
+        Route::post('award-requests/{award_request}/approve', [App\Http\Controllers\Admin\AwardRequestController::class, 'approve'])->name('award-requests.approve');
+        Route::post('award-requests/{award_request}/reject', [App\Http\Controllers\Admin\AwardRequestController::class, 'reject'])->name('award-requests.reject');
+        // You can add Award Requests routes here later
     });
 
     // Add route for org_terms.show so org term cards work

@@ -30,4 +30,10 @@ class Position extends Model
     {
         return $this->belongsToMany(User::class, 'position_user', 'position_id', 'user_id');
     }
+
+    public function usersForOrgTerm($orgTermId)
+    {
+        return $this->belongsToMany(User::class, 'org_term_user', 'position_id', 'user_id')
+            ->wherePivot('org_term_id', $orgTermId);
+    }
 }

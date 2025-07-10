@@ -79,4 +79,10 @@ class Org extends Model
     {
         return $this->hasMany(OrgTerm::class, 'org_id');
     }
+
+    // Award Types (many-to-many)
+    public function awardTypes()
+    {
+        return $this->belongsToMany(AwardType::class, 'org_award_type', 'org_id', 'award_type_id');
+    }
 }

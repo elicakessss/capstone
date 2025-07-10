@@ -18,4 +18,8 @@ class OrgTerm extends Model
     {
         return $this->belongsTo(Org::class);
     }
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'org_term_user', 'org_term_id', 'user_id')->withPivot('terms_served');
+    }
 }

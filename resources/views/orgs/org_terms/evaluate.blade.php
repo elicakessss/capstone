@@ -63,9 +63,16 @@
                 </ul>
             </div>
         </div>
-        <div class="flex justify-end">
-            <a href="{{ route('org_terms.show', $orgTerm) }}" class="btn btn-green mt-4"><i class="fas fa-arrow-left"></i> Back</a>
+        @if($canEvaluate)
+        <div class="flex justify-end gap-2">
+            <a href="{{ route('org_terms.show', $orgTerm) }}" class="btn btn-gray mt-4"><i class="fas fa-times"></i> Cancel</a>
+            <button type="submit" class="btn btn-green mt-4"><i class="fas fa-save"></i> Save</button>
         </div>
+        @else
+        <div class="flex justify-end">
+            <a href="{{ route('org_terms.show', $orgTerm) }}" class="btn btn-gray mt-4"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+        @endif
     </form>
 </div>
 @endsection

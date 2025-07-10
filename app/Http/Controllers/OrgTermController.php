@@ -73,7 +73,11 @@ class OrgTermController extends Controller
         $isAdviserOrAdmin = auth()->user() && (in_array('adviser', auth()->user()->roles ?? []) || in_array('admin', auth()->user()->roles ?? []));
         $advisers = $orgTerm->org->advisers ?? collect();
         $positions = $orgTerm->org->positions ?? collect();
-
+        // For each position, only get users assigned for this org term
+        $positions = $positions->map(function($position) use ($orgTerm) {
+            $position->users = $position->usersForOrgTerm($orgTerm->id)->get();
+            return $position;
+        });
         // Collect all students assigned to any position in this org term
         $students = $positions->flatMap(function($position) {
             return $position->users;
@@ -179,13 +183,29 @@ class OrgTermController extends Controller
         if ($org->department_id && $student->department_id != $org->department_id) {
             return back()->withErrors(['student_id' => 'Student does not belong to the required department.']);
         }
-        // Enforce slot limit
-        if ($position->users->count() >= $position->slots) {
+        // Enforce slot limit (count only for this org term and position)
+        $currentCount = \DB::table('org_term_user')
+            ->where('org_term_id', $orgTermId)
+            ->where('position_id', $position->id)
+            ->count();
+        if ($currentCount >= $position->slots) {
             return back()->withErrors(['position_id' => 'This position has reached its slot limit.']);
         }
-        // Attach student to position if not already assigned
-        if (!$position->users->contains($request->student_id)) {
-            $position->users()->attach($request->student_id);
+        // Attach student to org_term_user if not already assigned for this org term and position
+        $exists = \DB::table('org_term_user')
+            ->where('org_term_id', $orgTermId)
+            ->where('position_id', $position->id)
+            ->where('user_id', $student->id)
+            ->exists();
+        if (!$exists) {
+            \DB::table('org_term_user')->insert([
+                'org_term_id' => $orgTermId,
+                'position_id' => $position->id,
+                'user_id' => $student->id,
+                'terms_served' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
         return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Student assigned to position successfully.');
     }
@@ -407,6 +427,60 @@ class OrgTermController extends Controller
         $orgTerm = \App\Models\OrgTerm::findOrFail($orgTermId);
         $orgTerm->evaluation_state = 'closed';
         $orgTerm->save();
+
+        // Compute and store evaluation results for all users in this org term
+        $org = $orgTerm->org;
+        $form = $org->evaluationForms()->latest()->first();
+        if ($form) {
+            $weights = $form->criteriaWeights->pluck('weight', 'evaluator_type');
+            $adviserWeight = $weights['adviser'] ?? 0;
+            $peerWeight = $weights['peer'] ?? 0;
+            $selfWeight = $weights['self'] ?? 0;
+            $serviceWeight = $weights['service'] ?? 0;
+            foreach ($orgTerm->users as $user) {
+                $adviserAvg = \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $user->id)
+                    ->whereHas('evaluator', function($q) { $q->whereJsonContains('roles', 'adviser'); })
+                    ->avg('score') ?? 0;
+                $peerAvg = \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $user->id)
+                    ->whereHas('evaluator', function($q) { $q->whereJsonContains('roles', 'student'); })
+                    ->whereColumn('evaluator_id', '!=', 'user_id')
+                    ->avg('score') ?? 0;
+                $selfAvg = \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $user->id)
+                    ->where('evaluator_id', $user->id)
+                    ->whereHas('evaluator', function($q) { $q->whereJsonContains('roles', 'student'); })
+                    ->avg('score') ?? 0;
+                $orgTypeId = $org->org_type_id ?? null;
+                $serviceScore = 0;
+                if ($orgTypeId) {
+                    $serviceScore = \App\Models\OrgTerm::whereHas('org', function($q) use ($orgTypeId) {
+                        $q->where('org_type_id', $orgTypeId);
+                    })->whereHas('users', function($q) use ($user) {
+                        $q->where('user_id', $user->id);
+                    })->count();
+                }
+                $score = ($adviserAvg * $adviserWeight) + ($peerAvg * $peerWeight) + ($selfAvg * $selfWeight) + ($serviceScore * $serviceWeight);
+                $rank = null;
+                if ($score !== null) {
+                    $rank = \App\Models\AwardRank::where('min_score', '<=', $score)
+                        ->where('max_score', '>=', $score)
+                        ->orderBy('order')->first();
+                }
+                \App\Models\EvaluationResult::updateOrCreate(
+                    [
+                        'org_term_id' => $orgTerm->id,
+                        'user_id' => $user->id,
+                    ],
+                    [
+                        'score' => $score,
+                        'rank_id' => $rank ? $rank->id : null,
+                    ]
+                );
+            }
+        }
+
         return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Evaluation phase ended successfully.');
     }
 }

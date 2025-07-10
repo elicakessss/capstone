@@ -9,9 +9,10 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('org_term_id')->constrained('org_terms')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('position_id')->constrained('positions')->onDelete('cascade');
             $table->unsignedTinyInteger('terms_served')->default(0);
             $table->timestamps();
-            $table->unique(['org_term_id', 'user_id']);
+            $table->unique(['org_term_id', 'position_id', 'user_id']);
         });
     }
     public function down() {

@@ -885,6 +885,12 @@
                                     </div>
                                     <span>Evaluation Forms</span>
                                 </a>
+                                <a href="{{ route('admin.award-types.index') }}" class="sidebar-item group flex items-center px-4 py-3 text-sm rounded-xl transition-all duration-200 transform hover:scale-105 hover:bg-white hover:shadow-lg {{ request()->routeIs('admin.award-types.*') || request()->routeIs('admin.award-requests.*') ? 'bg-white shadow-md active' : '' }}" style="color: #00471B;">
+                                    <div class="w-10 h-10 flex items-center justify-center mr-3 transition-all duration-200" style="color: #00471B;">
+                                        <i class="fas fa-trophy text-lg"></i>
+                                    </div>
+                                    <span>Awards</span>
+                                </a>
                             </div>
                         </div>
                     @endif

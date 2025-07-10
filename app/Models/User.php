@@ -87,4 +87,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Org::class, 'org_adviser', 'adviser_id', 'org_id');
     }
+
+    /**
+     * Get the org terms that the user is associated with.
+     */
+    public function orgTerms()
+    {
+        return $this->belongsToMany(OrgTerm::class, 'org_term_user', 'user_id', 'org_term_id')->withPivot('terms_served');
+    }
 }

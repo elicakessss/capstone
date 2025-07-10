@@ -10,9 +10,9 @@
             <h1 class="text-3xl font-bold text-gray-900">My Portfolio</h1>
             <p class="text-gray-600 mt-1">Manage your documents and achievements</p>
         </div>
-        <button class="btn btn-green">
-            <i class="fas fa-plus mr-2"></i>
-            Add Document
+        <button class="btn btn-green" onclick="showRequestAwardModal(event)">
+            <i class="fas fa-trophy mr-2"></i>
+            Request Award
         </button>
     </div>
     <div class="flex flex-col md:flex-row gap-6 mb-6">
@@ -162,6 +162,48 @@
                     </form>
                 </div>
             </div>
+            <!-- Request Award Modal -->
+            <div id="requestAwardModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-0 relative">
+                    <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-lg bg-green-900">
+                        <h3 class="text-lg font-semibold text-white">Request Award</h3>
+                        <button onclick="hideRequestAwardModal()" class="text-white hover:text-gray-200 bg-green-800 rounded px-2 py-1 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form method="POST" action="{{ route('portfolio.requestAward') }}" class="px-6 pt-6 pb-2">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="form-label text-base mb-1">Award Type</label>
+                            <select name="award_type_id" class="form-select w-full text-base" required>
+                                <option value="">Select Award</option>
+                                @foreach($orgPositions as $item)
+                                    @php
+                                        $org = \App\Models\Org::where('name', $item['org'])->first();
+                                        if($org) {
+                                            $awardTypes = $org->awardTypes ?? collect();
+                                            foreach($awardTypes as $awardType) {
+                                                echo '<option value="'.$awardType->id.'" data-org="'.$org->id.'">'.$awardType->name.' ('.$item['org'].')</option>';
+                                            }
+                                        }
+                                    @endphp
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="is_graduating" class="mr-2" required>
+                                <span>I confirm I am graduating</span>
+                            </label>
+                        </div>
+                        <input type="hidden" name="org_id" id="requestAwardOrgId" value="">
+                        <div class="flex justify-end gap-2 border-t pt-4 pb-2 bg-white rounded-b-lg">
+                            <button type="button" onclick="hideRequestAwardModal()" class="btn btn-gray">Cancel</button>
+                            <button type="submit" class="btn btn-green">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <script>
             function showAwardModal(e) {
                 e.preventDefault();
@@ -218,6 +260,24 @@
                     indicator.classList.add('hidden');
                 }
             }
+            function showRequestAwardModal(e) {
+                e.preventDefault();
+                document.getElementById('requestAwardModal').classList.remove('hidden');
+            }
+            function hideRequestAwardModal() {
+                document.getElementById('requestAwardModal').classList.add('hidden');
+            }
+            // Set org_id based on selected award type
+            document.addEventListener('DOMContentLoaded', function() {
+                const select = document.querySelector('#requestAwardModal select[name="award_type_id"]');
+                const orgInput = document.getElementById('requestAwardOrgId');
+                if(select && orgInput) {
+                    select.addEventListener('change', function() {
+                        const selected = select.options[select.selectedIndex];
+                        orgInput.value = selected.getAttribute('data-org') || '';
+                    });
+                }
+            });
             </script>
         </div>
     </div>

@@ -28,21 +28,24 @@ class PortfolioController extends Controller
         // For the left card: org/position pairs for this user (student or adviser)
         $orgPositions = [];
         $uniqueKeys = [];
-        // Member positions
+        // Member positions (use org_term_user for accuracy)
         foreach ($orgTerms as $orgTerm) {
-            foreach ($orgTerm->org->positions as $position) {
-                foreach ($position->users as $u) {
-                    if ($u->id === $user->id) {
-                        $key = $orgTerm->org->id . '|' . $orgTerm->academic_year . '|' . $position->title;
-                        if (!isset($uniqueKeys[$key])) {
-                            $orgPositions[] = [
-                                'org' => $orgTerm->org->name,
-                                'academic_year' => $orgTerm->academic_year,
-                                'role' => $position->title,
-                                'logo' => $orgTerm->org->logo ?? null,
-                            ];
-                            $uniqueKeys[$key] = true;
-                        }
+            $pivotRows = \DB::table('org_term_user')
+                ->where('org_term_id', $orgTerm->id)
+                ->where('user_id', $user->id)
+                ->get();
+            foreach ($pivotRows as $pivot) {
+                $position = Position::find($pivot->position_id);
+                if ($position) {
+                    $key = $orgTerm->org->id . '|' . $orgTerm->academic_year . '|' . $position->title;
+                    if (!isset($uniqueKeys[$key])) {
+                        $orgPositions[] = [
+                            'org' => $orgTerm->org->name,
+                            'academic_year' => $orgTerm->academic_year,
+                            'role' => $position->title,
+                            'logo' => $orgTerm->org->logo ?? null,
+                        ];
+                        $uniqueKeys[$key] = true;
                     }
                 }
             }

@@ -69,7 +69,7 @@
                 <div class="text-gray-600 text-sm">Monitor evaluation progress and assign peer evaluators before starting the evaluation for this term.</div>
             </div>
             @if($isAdviserOrAdmin)
-                @if($orgTerm->evaluation_state === null || $orgTerm->evaluation_state === 'cancelled')
+                @if(empty($orgTerm->evaluation_state) || $orgTerm->evaluation_state === 'cancelled' || $orgTerm->evaluation_state === 'not_started')
                     <form method="POST" action="{{ route('org_terms.startEvaluation', $orgTerm) }}">
                         @csrf
                         <div class="flex flex-col gap-3 mb-2">
@@ -151,7 +151,6 @@
         <div class="bg-white rounded-lg shadow p-6 min-h-[220px] flex flex-col justify-between" style="border-left: 5px solid #00471B;">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-bold text-gray-900">Positions</h2>
-                {{-- Assign Student button removed as requested --}}
             </div>
             @php
                 $sortedPositions = $positions->sortBy('order');
@@ -165,7 +164,7 @@
                                     <span class="font-semibold">{{ $position->title }}</span>
                                     <span class="text-xs text-gray-400 ml-2">(Slots: {{ $position->slots }}, Order: {{ $position->order }})</span>
                                 </div>
-                                @if($isAdviserOrAdmin && ($orgTerm->evaluation_state === null || $orgTerm->evaluation_state === 'cancelled'))
+                                @if($isAdviserOrAdmin && (empty($orgTerm->evaluation_state) || $orgTerm->evaluation_state === 'cancelled' || $orgTerm->evaluation_state === 'not_started'))
                                     <button class="btn btn-blue btn-sm" type="button" onclick="showAssignStudentModal({{ $position->id }})">Assign</button>
                                 @endif
                             </div>

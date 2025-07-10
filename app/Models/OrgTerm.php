@@ -12,6 +12,7 @@ class OrgTerm extends Model
         'org_id',
         'academic_year',
         'created_by',
+        'evaluation_state',
     ];
     public function org()
     {

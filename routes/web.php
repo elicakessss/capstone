@@ -109,10 +109,17 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/forms/{form}', [App\Http\Controllers\Admin\EvaluationFormController::class, 'destroy'])->name('forms.destroy');
         // Admin Evaluation Form Domains
         Route::post('/forms/{form}/domains', [App\Http\Controllers\Admin\EvaluationDomainController::class, 'store'])->name('forms.domains.store');
+        Route::put('/forms/{form}/domains/{domain}', [App\Http\Controllers\Admin\EvaluationDomainController::class, 'update'])->name('forms.domains.update');
         // Admin Evaluation Form Strands
         Route::post('/forms/{form}/domains/{domain}/strands', [App\Http\Controllers\Admin\EvaluationStrandController::class, 'store'])->name('forms.domains.strands.store');
+        Route::put('/forms/{form}/domains/{domain}/strands/{strand}', [App\Http\Controllers\Admin\EvaluationStrandController::class, 'update'])->name('forms.domains.strands.update');
         // Admin Evaluation Form Questions
         Route::post('/forms/{form}/domains/{domain}/strands/{strand}/questions', [App\Http\Controllers\Admin\EvaluationQuestionController::class, 'store'])->name('forms.domains.strands.questions.store');
+        Route::put('/forms/{form}/domains/{domain}/strands/{strand}/questions/{question}', [App\Http\Controllers\Admin\EvaluationQuestionController::class, 'update'])->name('forms.domains.strands.questions.update');
+        // Assign organizations to evaluation form
+        Route::post('/forms/{form}/assign-orgs', [App\Http\Controllers\Admin\EvaluationFormController::class, 'assignOrgs'])->name('forms.assign-orgs');
+        // Update criteria weights
+        Route::put('forms/{form}/criteria-weights', [App\Http\Controllers\Admin\EvaluationFormController::class, 'updateCriteriaWeights'])->name('forms.criteria-weights.update');
     });
 
     // Add route for org_terms.show so org term cards work
@@ -123,6 +130,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('org_terms/{orgTerm}/search-students', [App\Http\Controllers\OrgTermController::class, 'searchStudents'])->name('org_terms.searchStudents');
     // Remove student from position in org term
     Route::delete('org_terms/{orgTerm}/positions/{position}/remove-student/{user}', [App\Http\Controllers\OrgTermController::class, 'removeStudent'])->name('org_terms.removeStudent');
+    // Assign peer evaluators to org term
+    Route::post('org_terms/{orgTerm}/assign-peers', [App\Http\Controllers\OrgTermController::class, 'assignPeers'])->name('org_terms.assignPeers');
+    // Start evaluation for org term
+    Route::post('org_terms/{orgTerm}/start-evaluation', [App\Http\Controllers\OrgTermController::class, 'startEvaluation'])->name('org_terms.startEvaluation');
+    // Cancel evaluation for org term
+    Route::post('org_terms/{orgTerm}/cancel-evaluation', [App\Http\Controllers\OrgTermController::class, 'cancelEvaluation'])->name('org_terms.cancelEvaluation');
+    // Evaluation form for a student in an org term
+    Route::get('org_terms/{orgTerm}/evaluate/{user}', [App\Http\Controllers\OrgTermController::class, 'evaluate'])->name('org_terms.evaluate');
+    // Submit evaluation form
+    Route::post('org_terms/{orgTerm}/evaluate/{user}', [App\Http\Controllers\OrgTermController::class, 'submitEvaluation'])->name('org_terms.submitEvaluation');
+    // Evaluation results/report for an org term
+    Route::get('org_terms/{orgTerm}/results', [App\Http\Controllers\OrgTermController::class, 'results'])->name('org_terms.results');
+    // Close evaluation for org term
+    Route::post('org_terms/{orgTerm}/close-evaluation', [App\Http\Controllers\OrgTermController::class, 'closeEvaluation'])->name('org_terms.closeEvaluation');
 });
 
 // Guest routes

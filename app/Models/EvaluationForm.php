@@ -18,4 +18,7 @@ class EvaluationForm extends Model
     public function creator() {
         return $this->belongsTo(User::class, 'created_by');
     }
+    public function organizations() {
+        return $this->belongsToMany(Org::class, 'evaluation_form_org', 'evaluation_form_id', 'org_id');
+    }
 }

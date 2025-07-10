@@ -37,4 +37,35 @@ class EvaluationQuestionController extends Controller
         }
         return redirect()->route('admin.forms.show', $form)->with('success', 'Question added.');
     }
+
+    public function update(Request $request, EvaluationForm $form, EvaluationDomain $domain, EvaluationStrand $strand, $questionId)
+    {
+        $request->validate([
+            'text' => 'required|string|max:255',
+            'likert_labels' => 'required|array|min:1',
+            'likert_scores' => 'required|array|min:1',
+            'evaluator_types' => 'required|array|min:1',
+        ]);
+        $question = $strand->questions()->findOrFail($questionId);
+        $question->update([
+            'text' => $request->text,
+        ]);
+        // Update Likert scale options
+        $question->likertScales()->delete();
+        foreach (array_map(null, $request->likert_labels, $request->likert_scores) as $i => [$label, $score]) {
+            $question->likertScales()->create([
+                'label' => $label,
+                'score' => $score,
+                'order' => $i + 1,
+            ]);
+        }
+        // Update evaluator types
+        $question->evaluatorTypes()->delete();
+        foreach ($request->evaluator_types as $type) {
+            $question->evaluatorTypes()->create([
+                'evaluator_type' => $type,
+            ]);
+        }
+        return redirect()->route('admin.forms.show', $form)->with('success', 'Question updated.');
+    }
 }

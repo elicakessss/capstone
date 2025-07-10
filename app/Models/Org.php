@@ -67,4 +67,10 @@ class Org extends Model
     {
         return $this->belongsToMany(User::class, 'org_adviser', 'org_id', 'adviser_id');
     }
+
+    // Evaluation Forms (many-to-many relationship)
+    public function evaluationForms()
+    {
+        return $this->belongsToMany(EvaluationForm::class, 'evaluation_form_org', 'org_id', 'evaluation_form_id');
+    }
 }

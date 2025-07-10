@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\OrgTerm;
+use App\Models\User;
 
 class OrgTermController extends Controller
 {
@@ -73,7 +74,91 @@ class OrgTermController extends Controller
         $advisers = $orgTerm->org->advisers ?? collect();
         $positions = $orgTerm->org->positions ?? collect();
 
-        return view('orgs.org_terms.show', compact('orgTerm', 'advisers', 'positions', 'isAdviserOrAdmin'));
+        // Collect all students assigned to any position in this org term
+        $students = $positions->flatMap(function($position) {
+            return $position->users;
+        })->unique('id')->values();
+
+        // Build evaluation status for each user
+        $studentEvalStatus = [];
+        foreach ($positions as $position) {
+            foreach ($position->users as $user) {
+                $studentEvalStatus[$user->id] = [
+                    'self' => \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                        ->where('user_id', $user->id)
+                        ->where('evaluator_id', $user->id)
+                        ->exists(),
+                    'peer' => \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                        ->where('user_id', $user->id)
+                        ->where('evaluator_id', '!=', $user->id)
+                        ->whereHas('evaluator', function($q) {
+                            $q->whereJsonContains('roles', 'student');
+                        })
+                        ->exists(),
+                    'adviser' => \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                        ->where('user_id', $user->id)
+                        ->whereHas('evaluator', function($q) {
+                            $q->whereJsonContains('roles', 'adviser');
+                        })
+                        ->exists(),
+                ];
+            }
+        }
+
+        // TODO: Pass peerEvaluators if needed, for now pass as empty array if not set elsewhere
+        $peerEvaluators = \DB::table('org_term_peer_evaluators')
+            ->where('org_term_id', $orgTerm->id)
+            ->get();
+
+        // Calculate progress bars
+        $totalStudents = $students->count();
+        $adviserEvaluations = 0;
+        $peerEvaluations = 0;
+        $selfEvaluations = 0;
+        if ($totalStudents > 0) {
+            foreach ($students as $student) {
+                // Adviser evaluation: at least one adviser evaluation exists for this student
+                $adviserEvaluations += \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $student->id)
+                    ->whereHas('evaluator', function($q) {
+                        $q->whereJsonContains('roles', 'adviser');
+                    })->exists() ? 1 : 0;
+                // Peer evaluation: at least one peer evaluation exists for this student (evaluator is student and not self)
+                $peerEvaluations += \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $student->id)
+                    ->whereHas('evaluator', function($q) {
+                        $q->whereJsonContains('roles', 'student');
+                    })
+                    ->whereColumn('evaluator_id', '!=', 'user_id')
+                    ->exists() ? 1 : 0;
+                // Self evaluation: at least one self evaluation exists for this student (evaluator is student and self)
+                $selfEvaluations += \App\Models\EvaluationResponse::where('org_term_id', $orgTerm->id)
+                    ->where('user_id', $student->id)
+                    ->where('evaluator_id', $student->id)
+                    ->whereHas('evaluator', function($q) {
+                        $q->whereJsonContains('roles', 'student');
+                    })
+                    ->exists() ? 1 : 0;
+            }
+        }
+        $adviserProgress = $totalStudents > 0 ? round(($adviserEvaluations / $totalStudents) * 100) : 0;
+        $peerProgress = $totalStudents > 0 ? round(($peerEvaluations / $totalStudents) * 100) : 0;
+        $selfProgress = $totalStudents > 0 ? round(($selfEvaluations / $totalStudents) * 100) : 0;
+
+        // Determine if all evaluations are complete for all students
+        $allEvaluationsComplete = true;
+        foreach ($students as $student) {
+            if (
+                empty($studentEvalStatus[$student->id]['self']) ||
+                empty($studentEvalStatus[$student->id]['peer']) ||
+                empty($studentEvalStatus[$student->id]['adviser'])
+            ) {
+                $allEvaluationsComplete = false;
+                break;
+            }
+        }
+
+        return view('orgs.org_terms.show', compact('orgTerm', 'advisers', 'positions', 'isAdviserOrAdmin', 'students', 'peerEvaluators', 'studentEvalStatus', 'adviserProgress', 'peerProgress', 'selfProgress', 'allEvaluationsComplete'));
     }
 
     public function assignStudent(Request $request, $orgTermId)
@@ -141,5 +226,187 @@ class OrgTermController extends Controller
     {
         $org = \App\Models\Org::with(['department', 'advisers', 'positions.users', 'creator'])->findOrFail($id);
         return view('orgs.show', compact('org'));
+    }
+
+    public function assignPeers(Request $request, $orgTermId)
+    {
+        $request->validate([
+            'peer_1' => 'required|different:peer_2|exists:users,id',
+            'peer_2' => 'required|different:peer_1|exists:users,id',
+        ]);
+        $orgTerm = \App\Models\OrgTerm::findOrFail($orgTermId);
+        // Remove previous assignments for this org term
+        \DB::table('org_term_peer_evaluators')->where('org_term_id', $orgTerm->id)->delete();
+        // Assign new peers
+        \DB::table('org_term_peer_evaluators')->insert([
+            [
+                'org_term_id' => $orgTerm->id,
+                'peer_id' => $request->peer_1,
+                'peer_number' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'org_term_id' => $orgTerm->id,
+                'peer_id' => $request->peer_2,
+                'peer_number' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+        return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Peer evaluators assigned successfully.');
+    }
+
+    public function startEvaluation(Request $request, $orgTermId)
+    {
+        $orgTerm = OrgTerm::findOrFail($orgTermId);
+        // Only allow if not already in progress or closed
+        if ($orgTerm->evaluation_state === 'in_progress') {
+            return back()->withErrors(['evaluation_state' => 'Evaluation is already in progress.']);
+        }
+        if ($orgTerm->evaluation_state === 'closed') {
+            return back()->withErrors(['evaluation_state' => 'Evaluation is already closed.']);
+        }
+        // Validate peer evaluators
+        $request->validate([
+            'peer_1' => 'required|different:peer_2|exists:users,id',
+            'peer_2' => 'required|different:peer_1|exists:users,id',
+        ]);
+        // Remove previous assignments for this org term
+        \DB::table('org_term_peer_evaluators')->where('org_term_id', $orgTerm->id)->delete();
+        // Assign new peers
+        \DB::table('org_term_peer_evaluators')->insert([
+            [
+                'org_term_id' => $orgTerm->id,
+                'peer_id' => $request->peer_1,
+                'peer_number' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'org_term_id' => $orgTerm->id,
+                'peer_id' => $request->peer_2,
+                'peer_number' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+        // Find the assigned evaluation form for this org
+        $form = $orgTerm->org->evaluationForms()->latest('evaluation_form_org.created_at')->first();
+        if (!$form) {
+            return back()->withErrors(['evaluation_form' => 'No evaluation form assigned to this organization.']);
+        }
+        // Set state to in_progress
+        $orgTerm->evaluation_state = 'in_progress';
+        $orgTerm->save();
+        // Optionally: increment terms_served for all org_term_user records for this orgTerm
+        \DB::table('org_term_user')
+            ->where('org_term_id', $orgTerm->id)
+            ->increment('terms_served');
+        // Optionally: create an org_term_evaluation record here if you want to track instances
+        return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Evaluation started and peer evaluators assigned.');
+    }
+
+    public function cancelEvaluation(Request $request, $orgTermId)
+    {
+        $orgTerm = OrgTerm::findOrFail($orgTermId);
+        // Only allow if in progress
+        if ($orgTerm->evaluation_state !== 'in_progress') {
+            return back()->withErrors(['evaluation_state' => 'Evaluation is not in progress.']);
+        }
+        $orgTerm->evaluation_state = 'cancelled';
+        $orgTerm->save();
+        // Remove peer evaluator assignments
+        \DB::table('org_term_peer_evaluators')->where('org_term_id', $orgTerm->id)->delete();
+        // Remove all evaluation responses for this org term
+        \DB::table('evaluation_responses')->where('org_term_id', $orgTerm->id)->delete();
+        // Optionally: revert any evaluation instance records if needed
+        return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Evaluation cancelled and all related data removed. You may now edit students and positions.');
+    }
+
+    public function evaluate($orgTermId, $userId)
+    {
+        $orgTerm = \App\Models\OrgTerm::with(['org'])->findOrFail($orgTermId);
+        $student = User::findOrFail($userId);
+        $evaluatorId = auth()->id();
+        // Fetch the assigned evaluation form for this org
+        $form = $orgTerm->org->evaluationForms()->latest()->first();
+        if (!$form) {
+            abort(404, 'No evaluation form assigned to this organization.');
+        }
+        // Eager load domains, strands, questions (questions will eager load likertScales)
+        $formDomains = $form->domains()->with(['strands.questions.likertScales'])->get();
+        // Check if already evaluated
+        $existingResponses = \DB::table('evaluation_responses')
+            ->where('org_term_id', $orgTermId)
+            ->where('user_id', $userId)
+            ->where('evaluator_id', $evaluatorId)
+            ->pluck('score', 'question_id');
+        // Check if evaluation is allowed (state, role, etc.)
+        $canEvaluate = $orgTerm->evaluation_state === 'in_progress';
+        return view('orgs.org_terms.evaluate', compact('orgTerm', 'student', 'formDomains', 'existingResponses', 'canEvaluate'));
+    }
+
+    public function submitEvaluation(Request $request, $orgTermId, $userId)
+    {
+        $orgTerm = \App\Models\OrgTerm::findOrFail($orgTermId);
+        if ($orgTerm->evaluation_state !== 'in_progress') {
+            return back()->withErrors(['evaluation_state' => 'Evaluation is not in progress.'])->withInput();
+        }
+        $evaluatorId = auth()->id();
+        $responses = $request->input('responses', []);
+        if (empty($responses)) {
+            return back()->withErrors(['responses' => 'Please answer all questions.'])->withInput();
+        }
+        foreach ($responses as $questionId => $score) {
+            \App\Models\EvaluationResponse::updateOrCreate(
+                [
+                    'org_term_id' => $orgTermId,
+                    'user_id' => $userId,
+                    'evaluator_id' => $evaluatorId,
+                    'question_id' => $questionId,
+                ],
+                [
+                    'score' => $score,
+                ]
+            );
+        }
+        // Audit log (simple):
+        \Log::info('Evaluation submitted', [
+            'org_term_id' => $orgTermId,
+            'user_id' => $userId,
+            'evaluator_id' => $evaluatorId,
+            'responses' => $responses,
+            'timestamp' => now(),
+        ]);
+        // (Optional) Notification stub
+        // event(new \App\Events\EvaluationSubmitted($orgTermId, $userId, $evaluatorId));
+        return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Evaluation submitted successfully.');
+    }
+
+    public function results($orgTermId)
+    {
+        $orgTerm = \App\Models\OrgTerm::with(['org'])->findOrFail($orgTermId);
+        $form = $orgTerm->org->evaluationForms()->latest()->first();
+        if (!$form) {
+            abort(404, 'No evaluation form assigned to this organization.');
+        }
+        $formDomains = $form->domains()->with(['strands.questions'])->get();
+        // Aggregate results: average score per question
+        $questionAverages = \App\Models\EvaluationResponse::where('org_term_id', $orgTermId)
+            ->selectRaw('question_id, AVG(score) as avg_score, COUNT(*) as responses')
+            ->groupBy('question_id')
+            ->pluck('avg_score', 'question_id');
+        // Length of service scoring (stub, implement as needed)
+        // $lengthOfServiceScores = ...
+        return view('orgs.org_terms.results', compact('orgTerm', 'formDomains', 'questionAverages'));
+    }
+
+    public function closeEvaluation($orgTermId)
+    {
+        $orgTerm = \App\Models\OrgTerm::findOrFail($orgTermId);
+        $orgTerm->evaluation_state = 'closed';
+        $orgTerm->save();
+        return redirect()->route('org_terms.show', $orgTermId)->with('success', 'Evaluation phase ended successfully.');
     }
 }

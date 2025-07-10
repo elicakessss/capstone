@@ -21,4 +21,17 @@ class EvaluationDomainController extends Controller
         ]);
         return redirect()->route('admin.forms.show', $form)->with('success', 'Domain added.');
     }
+
+    public function update(Request $request, EvaluationForm $form, EvaluationDomain $domain)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+        $domain->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+        return redirect()->route('admin.forms.show', $form)->with('success', 'Domain updated.');
+    }
 }

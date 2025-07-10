@@ -19,4 +19,16 @@ class EvaluationStrandController extends Controller
         ]);
         return redirect()->route('admin.forms.show', $form)->with('success', 'Strand added.');
     }
+
+    public function update(Request $request, EvaluationForm $form, EvaluationDomain $domain, $strandId)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+        $strand = $domain->strands()->findOrFail($strandId);
+        $strand->update([
+            'name' => $request->name,
+        ]);
+        return redirect()->route('admin.forms.show', $form)->with('success', 'Strand updated.');
+    }
 }
